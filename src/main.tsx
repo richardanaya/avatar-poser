@@ -22,6 +22,18 @@ const App = () => {
   );
   return (
     <>
+      <div
+        style={{
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          color: "white",
+          font: "0.8125rem sans-serif",
+          zIndex: 99999,
+        }}
+      >
+        ＡＶＡＴＡＲ　ＰＯＳＥＲ
+      </div>
       <VRButton
         className="vr-button"
         style={{
