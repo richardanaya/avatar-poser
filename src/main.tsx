@@ -2,24 +2,20 @@ import { createRoot } from "react-dom/client";
 import { Canvas } from "@react-three/fiber";
 import "./index.css";
 import { Poser } from "./Poser";
-import {
-  EffectComposer,
-  DepthOfField,
-  Bloom,
-  Noise,
-  Vignette,
-} from "@react-three/postprocessing";
-import { Environment, OrbitControls } from "@react-three/drei";
-import { useMemo, useState } from "react";
-import { Controllers, Hands, useXR, VRButton, XR } from "@react-three/xr";
-import { eigengrau, eigenlumin } from "./colors";
+import { Environment } from "@react-three/drei";
+import { useMemo } from "react";
+import { Controllers, Hands, VRButton, XR } from "@react-three/xr";
+import { eigenlumin } from "./colors";
 
-const ROTATION_STEP = Math.PI / 180;
+const queryParams = new URLSearchParams(window.location.search);
+const modelUrl = queryParams.get("model");
 
 const App = () => {
   const model = useMemo(
     () =>
-      Math.random() < 0.5
+      modelUrl
+        ? modelUrl
+        : Math.random() < 0.5
         ? "https://models.readyplayer.me/640765d93e6d860c1d738326.glb"
         : "https://models.readyplayer.me/6407fbec0ed60d89a2c64367.glb",
     []
