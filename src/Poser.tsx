@@ -108,9 +108,9 @@ export const Poser = ({ url }: PoserProps) => {
         <group position={[0, 0, -1]}>
           <Avatar url={url} pose={currentPose} />
           <PoserHud
-            width={editorWidth}
-            height={editorHeight}
-            position={[0, 0.5, 0.2]}
+            width={1200}
+            height={250}
+            position={[0, 0.5, 0.3]}
             rotation={[-Math.PI / 4, 0, 0]}
             scale={0.002}
             onTimeChange={(_) => setCurrentTime(_)}

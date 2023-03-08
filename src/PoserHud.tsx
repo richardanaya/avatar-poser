@@ -13,6 +13,7 @@ import { allBones } from "./allBones";
 import { Vector3 } from "three";
 import { chartruse, eigengrau, eigenlumin, eigenmid } from "./colors";
 import { EventHandlers } from "@react-three/fiber/dist/declarations/src/core/events";
+import { Interactive } from "@react-three/xr";
 
 const hasAddedBone = localStorage.getItem("hasAddedBone") === "true";
 
@@ -190,23 +191,38 @@ const Button = ({
   onClick: () => void;
   position: [number, number, number];
 } & GroupProps) => {
+  let [hovered, setHovered] = useState(false);
   return (
-    <group
-      {...groupProps}
-      position={position}
-      onClick={onClick}
-      onPointerOver={() => {
-        document.body.style.cursor = "pointer";
+    <Interactive
+      onSqueezeEnd={onClick}
+      onHover={() => {
+        setHovered(true);
       }}
-      onPointerOut={() => {
-        document.body.style.cursor = "auto";
+      onBlur={() => {
+        setHovered(false);
       }}
     >
-      <RoundedBox args={[width, 23, 0]} radius={5}>
-        <meshBasicMaterial color={"#333"} />
-      </RoundedBox>
-      <Typography position={[0, 0, 1]}>{text}</Typography>
-    </group>
+      <group
+        {...groupProps}
+        position={
+          hovered
+            ? [position[0], position[1], position[2] + 5]
+            : [position[0], position[1], position[2]]
+        }
+        onClick={onClick}
+        onPointerOver={() => {
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "auto";
+        }}
+      >
+        <RoundedBox args={[width, 23, 0]} radius={5}>
+          <meshBasicMaterial color={hovered ? "#444" : "#333"} />
+        </RoundedBox>
+        <Typography position={[0, 0, 1]}>{text}</Typography>
+      </group>
+    </Interactive>
   );
 };
 
