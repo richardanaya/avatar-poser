@@ -722,10 +722,19 @@ export function PoserHud({
 
       <Button
         width={100}
-        text="Add Keyframe"
+        text={
+          animation.keyframes.length == 0 ? "Add Keyframe" : "Copy Keyframe"
+        }
         position={[width / 2 + PADDING - 180, -height / 2 + PADDING + 80, 0]}
         onClick={() => {
-          const newKeyFrame = JSON.parse(JSON.stringify(currentKeyFrame));
+          const newKeyFrame = JSON.parse(
+            JSON.stringify(
+              currentKeyFrame || {
+                time: 0,
+                pose: {},
+              }
+            )
+          );
           newKeyFrame.time = currentTime;
           setAnimation({
             ...animation,
