@@ -11,7 +11,7 @@ import {
   Noise,
   Vignette,
 } from "@react-three/postprocessing";
-import { Group } from "three";
+import create from "zustand";
 
 export type PoseAnimation = {
   length: number;
@@ -26,15 +26,60 @@ export type PoserProps = {
 };
 
 const queryParams = new URLSearchParams(window.location.search);
+const animationBase64 = queryParams.get("animation");
+const animLength = queryParams.get("length");
 const fancy = queryParams.get("fancy") === "true";
 
+export const usePoserStore = create<{
+  currentTime: number;
+  currentPose: AvatarPose;
+  animation: PoseAnimation;
+  interacting: boolean;
+  setInteracting: (interacting: boolean) => void;
+  setCurrentTime: (currentTime: number) => void;
+  setCurrentPose: (currentPose: AvatarPose) => void;
+  setAnimation: (animation: PoseAnimation) => void;
+}>((set) => ({
+  currentTime: 0,
+  currentPose: {},
+  animation:
+    animationBase64 === null
+      ? {
+          length: animLength !== null ? parseFloat(animLength) : 15,
+          keyframes: [
+            {
+              time: 0,
+              pose: {
+                MouthOpen: 0.5,
+                MouthSmile: 0.5,
+                Neck: {
+                  x: 0.6385,
+                  y: -0.3685,
+                  z: 0,
+                },
+              },
+            },
+          ],
+        }
+      : JSON.parse(atob(animationBase64)),
+  interacting: false,
+  setInteracting: (interacting: boolean) => set((_) => ({ interacting })),
+  setCurrentTime: (currentTime: number) => set((_) => ({ currentTime })),
+  setCurrentPose: (currentPose: AvatarPose) => set((_) => ({ currentPose })),
+  setAnimation: (animation: PoseAnimation) => set((_) => ({ animation })),
+}));
+
 export const Poser = ({ url }: PoserProps) => {
-  const [currentTime, setCurrentTime] = useState(0);
-  const [animation, setAnimation] = useState<PoseAnimation | null>({
-    length: 15,
-    keyframes: [],
-  });
-  const [currentPose, setCurrentPose] = useState<AvatarPose>({});
+  const {
+    currentTime,
+    currentPose,
+    animation,
+    setCurrentTime,
+    setCurrentPose,
+    setAnimation,
+    interacting,
+    setInteracting,
+  } = usePoserStore();
 
   useEffect(() => {
     if (animation) {
@@ -106,8 +151,6 @@ export const Poser = ({ url }: PoserProps) => {
   const editorHeight = height / 4;
   const editorWidth = width * 0.9;
 
-  const [interacting, setInteracting] = useState(false);
-
   const { isPresenting } = useXR();
 
   return (
@@ -116,8 +159,8 @@ export const Poser = ({ url }: PoserProps) => {
         <Avatar
           url={url}
           pose={currentPose}
-          position={!isPresenting ? [0, -5, 0] : undefined}
-          scale={!isPresenting ? [4, 4, 4] : undefined}
+          position={!isPresenting ? [0, -5, 0] : [0, 0, 0]}
+          scale={!isPresenting ? [4, 4, 4] : [1, 1, 1]}
         />
         {!isPresenting && (
           <>
@@ -130,17 +173,6 @@ export const Poser = ({ url }: PoserProps) => {
                 width={editorWidth}
                 height={Math.max(editorHeight, 200)}
                 position={[0, offsetY, 0]}
-                onTimeChange={(_) => setCurrentTime(_)}
-                onAnimationChange={(_) => setAnimation(_)}
-                onPointerDown={(_) => {
-                  setInteracting(true);
-                }}
-                onPointerUp={(_) => {
-                  setInteracting(false);
-                }}
-                onInteractingChanged={(_) => {
-                  setInteracting(_);
-                }}
               />
               <ambientLight intensity={1} />
               <pointLight position={[200, 200, 100]} intensity={0.5} />
@@ -173,17 +205,6 @@ export const Poser = ({ url }: PoserProps) => {
               position={[0, 1.2, 0.5]}
               rotation={[-Math.PI / 4, 0, 0]}
               scale={0.001}
-              onTimeChange={(_) => setCurrentTime(_)}
-              onAnimationChange={(_) => setAnimation(_)}
-              onPointerDown={(_) => {
-                setInteracting(true);
-              }}
-              onPointerUp={(_) => {
-                setInteracting(false);
-              }}
-              onInteractingChanged={(_) => {
-                setInteracting(_);
-              }}
             />
           </>
         )}

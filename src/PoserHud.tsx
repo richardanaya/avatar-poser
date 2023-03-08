@@ -1,7 +1,7 @@
 import { GroupProps, ReactThreeFiber, ThreeEvent } from "@react-three/fiber";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { PoseAnimation } from "./Poser";
-import { Box, RoundedBox, Text } from "@react-three/drei";
+import { PoseAnimation, usePoserStore } from "./Poser";
+import { Box, Plane, RoundedBox, Text } from "@react-three/drei";
 import { allBones } from "./allBones";
 import { Mesh, Vector3 } from "three";
 import { chartruse, eigenlumin, eigenmid } from "./colors";
@@ -12,16 +12,11 @@ const hasAddedBone = localStorage.getItem("hasAddedBone") === "true";
 
 const queryParams = new URLSearchParams(window.location.search);
 const autoplay = queryParams.get("autoplay") === "true";
-const animationBase64 = queryParams.get("animation");
-const animLength = queryParams.get("length");
 
 export type PoserHudProps = {
   width: number;
   height: number;
   url: string;
-  onTimeChange: (time: number) => void;
-  onAnimationChange: (animation: PoseAnimation) => void;
-  onInteractingChanged: (interacting: boolean) => void;
 } & GroupProps;
 
 const PADDING = 10;
@@ -503,65 +498,38 @@ const Timeline = ({
   );
 };
 
-export function PoserHud({
-  width,
-  height,
-  url,
-  onAnimationChange,
-  onTimeChange,
-  onInteractingChanged,
-  ...groupProps
-}: PoserHudProps) {
+export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
+  const {
+    animation,
+    setAnimation,
+    currentTime,
+    setCurrentTime,
+    setInteracting,
+  } = usePoserStore();
   const [helperMessage, setHelperMessage] = useState<string>("");
-  const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(autoplay);
   const [currentSelectedKeyFrame, setCurrentSelectedKeyFrame] = useState<
     number | null
   >(0);
   const [showBoneNames, setShowBoneNames] = useState(false);
   const [minimized, setMinimized] = useState(false);
-  const [animation, setAnimation] = useState<PoseAnimation>(() =>
-    animationBase64 === null
-      ? {
-          length: animLength !== null ? parseFloat(animLength) : 15,
-          keyframes: [
-            {
-              time: 0,
-              pose: {
-                MouthOpen: 0.5,
-                MouthSmile: 0.5,
-                Neck: {
-                  x: 0.6385,
-                  y: -0.3685,
-                  z: 0,
-                },
-              },
-            },
-          ],
-        }
-      : JSON.parse(atob(animationBase64))
-  );
   const [playIntervalHandle, setPlayIntervalHandle] = useState<number | null>(
     null
   );
 
   useEffect(() => {
-    onAnimationChange(animation);
+    setAnimation(animation);
   }, [animation]);
 
   useEffect(() => {
     if (isPlaying) {
       const rate = 1 / 60;
       const handle = setInterval(() => {
-        setCurrentTime((currentTime) => {
-          const newTime = currentTime + rate;
-          if (newTime > animation.length) {
-            onTimeChange(0);
-            return 0;
-          }
-          onTimeChange(newTime);
-          return newTime;
-        });
+        let newTime = currentTime + rate;
+        if (newTime > animation.length) {
+          newTime = 0;
+        }
+        setCurrentTime(newTime);
       }, 1000 * rate);
       setPlayIntervalHandle(handle);
     } else {
@@ -582,18 +550,23 @@ export function PoserHud({
   if (minimized) {
     return (
       <group {...groupProps}>
-        <RoundedBox
-          args={[width / 30, width / 30]}
-          radius={width / 120}
-          position={[
-            width / 2 - width / 30 / 2,
-            -height / 2 + width / 30 / 2,
-            -1,
-          ]}
-          onPointerUp={() => setMinimized(false)}
+        <Interactive
+          onSelectEnd={() => {
+            setMinimized(false);
+          }}
         >
-          <meshPhongMaterial color="#e9e9e2" transparent opacity={0.3} />
-        </RoundedBox>
+          <Plane
+            args={[width / 30, width / 30]}
+            position={[
+              width / 2 - width / 30 / 2,
+              -height / 2 + width / 30 / 2,
+              -1,
+            ]}
+            onPointerUp={() => setMinimized(false)}
+          >
+            <meshPhongMaterial color="#e9e9e2" transparent opacity={0.3} />
+          </Plane>
+        </Interactive>
       </group>
     );
   }
@@ -631,29 +604,26 @@ export function PoserHud({
               width={width / colsPerRow}
               onClick={() => {
                 localStorage.setItem("hasAddedBone", "true");
-                setAnimation((animation) => {
-                  const newAnimation = {
-                    ...animation,
-                    keyframes: animation.keyframes.map((keyframe, i) => {
-                      if (i !== currentSelectedKeyFrame) return keyframe;
-                      return {
-                        ...keyframe,
-                        pose: {
-                          ...keyframe.pose,
-                          [boneName]: ["MouthSmile", "MouthOpen"].includes(
-                            boneName
-                          )
-                            ? 0
-                            : {
-                                x: 0,
-                                y: 0,
-                                z: 0,
-                              },
-                        },
-                      };
-                    }),
-                  };
-                  return newAnimation;
+                setAnimation({
+                  ...animation,
+                  keyframes: animation.keyframes.map((keyframe, i) => {
+                    if (i !== currentSelectedKeyFrame) return keyframe;
+                    return {
+                      ...keyframe,
+                      pose: {
+                        ...keyframe.pose,
+                        [boneName]: ["MouthSmile", "MouthOpen"].includes(
+                          boneName
+                        )
+                          ? 0
+                          : {
+                              x: 0,
+                              y: 0,
+                              z: 0,
+                            },
+                      },
+                    };
+                  }),
                 });
                 setShowBoneNames(false);
                 setHelperMessage(
@@ -668,7 +638,15 @@ export function PoserHud({
   }
 
   return (
-    <group {...groupProps}>
+    <group
+      {...groupProps}
+      onPointerDown={() => {
+        setInteracting(true);
+      }}
+      onPointerUp={() => {
+        setInteracting(false);
+      }}
+    >
       <mesh position={[0, 0, -1]}>
         <boxGeometry args={[width, height]} />
         <meshBasicMaterial color="black" transparent opacity={0.3} />
@@ -844,25 +822,22 @@ export function PoserHud({
                   max={Math.PI}
                   large={isPresenting}
                   onChange={(_) => {
-                    setAnimation((animation) => {
-                      const newAnimation = {
-                        ...animation,
-                        keyframes: animation.keyframes.map((keyframe, i) => {
-                          if (i !== currentSelectedKeyFrame) return keyframe;
-                          return {
-                            ...keyframe,
-                            pose: {
-                              ...keyframe.pose,
-                              [boneName]: {
-                                x: _[0],
-                                y: _[1],
-                                z: _[2],
-                              },
+                    setAnimation({
+                      ...animation,
+                      keyframes: animation.keyframes.map((keyframe, i) => {
+                        if (i !== currentSelectedKeyFrame) return keyframe;
+                        return {
+                          ...keyframe,
+                          pose: {
+                            ...keyframe.pose,
+                            [boneName]: {
+                              x: _[0],
+                              y: _[1],
+                              z: _[2],
                             },
-                          };
-                        }),
-                      };
-                      return newAnimation;
+                          },
+                        };
+                      }),
                     });
                     setHelperMessage(
                       `Bone ${boneName} set to x:${_[0].toFixed(
@@ -882,21 +857,18 @@ export function PoserHud({
                   max={1}
                   large={isPresenting}
                   onChange={(_) => {
-                    setAnimation((animation) => {
-                      const newAnimation = {
-                        ...animation,
-                        keyframes: animation.keyframes.map((keyframe, i) => {
-                          if (i !== currentSelectedKeyFrame) return keyframe;
-                          return {
-                            ...keyframe,
-                            pose: {
-                              ...keyframe.pose,
-                              [boneName]: _[0],
-                            },
-                          };
-                        }),
-                      };
-                      return newAnimation;
+                    setAnimation({
+                      ...animation,
+                      keyframes: animation.keyframes.map((keyframe, i) => {
+                        if (i !== currentSelectedKeyFrame) return keyframe;
+                        return {
+                          ...keyframe,
+                          pose: {
+                            ...keyframe.pose,
+                            [boneName]: _[0],
+                          },
+                        };
+                      }),
                     });
                     setHelperMessage(
                       `Bone ${boneName} set to ${_[0].toFixed(4)}`
@@ -917,7 +889,9 @@ export function PoserHud({
         </Typography>
       )}
       <Timeline
-        onInteractingChanged={onInteractingChanged}
+        onInteractingChanged={(_) => {
+          setInteracting(_);
+        }}
         position={[0, height / 2 - PADDING - 40, 0]}
         width={width * 0.9}
         currentSelectedKeyFrame={currentSelectedKeyFrame ?? undefined}
@@ -928,7 +902,6 @@ export function PoserHud({
         animation={animation}
         onTimeChange={(_) => {
           setCurrentTime(_);
-          onTimeChange(_);
         }}
       />
     </group>

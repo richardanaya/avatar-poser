@@ -41,17 +41,17 @@ const App = () => {
           right: "10px",
           height: "40px",
           opacity: 0.5,
+          userSelect: "none",
         }}
       >
         VR
       </VRButton>
       <Canvas>
-        <color attach="background" args={["#16161b"]} />
-        <ambientLight />
         <XR>
-          <Controllers />
-          <Hands />
           <Poser url={model} />
+          <color attach="background" args={["#16161b"]} />
+          <ambientLight />
+          <Controllers />
           <Environment preset="city" />
         </XR>
       </Canvas>
