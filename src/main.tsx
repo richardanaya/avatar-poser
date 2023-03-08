@@ -4,7 +4,7 @@ import "./index.css";
 import { Poser } from "./Poser";
 import { Environment } from "@react-three/drei";
 import { useMemo } from "react";
-import { Controllers, Hands, VRButton, XR } from "@react-three/xr";
+import { Controllers, VRButton, XR } from "@react-three/xr";
 import { eigenlumin } from "./colors";
 
 const queryParams = new URLSearchParams(window.location.search);
@@ -30,6 +30,7 @@ const App = () => {
           color: "white",
           font: "0.8125rem sans-serif",
           zIndex: 99999,
+          pointerEvents: "none",
         }}
       >
         ＡＶＡＴＡＲ　ＰＯＳＥＲ

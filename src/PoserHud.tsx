@@ -525,11 +525,13 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
     if (isPlaying) {
       const rate = 1 / 60;
       const handle = setInterval(() => {
-        let newTime = currentTime + rate;
-        if (newTime > animation.length) {
-          newTime = 0;
-        }
-        setCurrentTime(newTime);
+        setCurrentTime((s) => {
+          let newTime = s.currentTime + rate;
+          if (newTime > animation.length) {
+            newTime = 0;
+          }
+          return { currentTime: newTime };
+        });
       }, 1000 * rate);
       setPlayIntervalHandle(handle);
     } else {
@@ -671,7 +673,9 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
         width={100}
         position={[width / 2 + PADDING - 70, height / 2 - 2 * PADDING, 0]}
         onClick={() => {
-          setCurrentTime(0);
+          setCurrentTime(() => ({
+            currentTime: 0,
+          }));
           setIsPlaying(true);
         }}
       />
@@ -901,7 +905,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
         currentTime={currentTime}
         animation={animation}
         onTimeChange={(_) => {
-          setCurrentTime(_);
+          setCurrentTime(() => ({ currentTime: _ }));
         }}
       />
     </group>

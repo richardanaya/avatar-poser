@@ -29,17 +29,17 @@ const queryParams = new URLSearchParams(window.location.search);
 const animationBase64 = queryParams.get("animation");
 const animLength = queryParams.get("length");
 const fancy = queryParams.get("fancy") === "true";
-
-export const usePoserStore = create<{
+export interface IPoserStore {
   currentTime: number;
   currentPose: AvatarPose;
   animation: PoseAnimation;
   interacting: boolean;
   setInteracting: (interacting: boolean) => void;
-  setCurrentTime: (currentTime: number) => void;
+  setCurrentTime: (update: (p: IPoserStore) => Partial<IPoserStore>) => void;
   setCurrentPose: (currentPose: AvatarPose) => void;
   setAnimation: (animation: PoseAnimation) => void;
-}>((set) => ({
+}
+export const usePoserStore = create<IPoserStore>((set) => ({
   currentTime: 0,
   currentPose: {},
   animation:
@@ -64,22 +64,16 @@ export const usePoserStore = create<{
       : JSON.parse(atob(animationBase64)),
   interacting: false,
   setInteracting: (interacting: boolean) => set((_) => ({ interacting })),
-  setCurrentTime: (currentTime: number) => set((_) => ({ currentTime })),
+  getCurrenttime: () => 0,
+  setCurrentTime: (update: (p: IPoserStore) => Partial<IPoserStore>) =>
+    set(update),
   setCurrentPose: (currentPose: AvatarPose) => set((_) => ({ currentPose })),
   setAnimation: (animation: PoseAnimation) => set((_) => ({ animation })),
 }));
 
 export const Poser = ({ url }: PoserProps) => {
-  const {
-    currentTime,
-    currentPose,
-    animation,
-    setCurrentTime,
-    setCurrentPose,
-    setAnimation,
-    interacting,
-    setInteracting,
-  } = usePoserStore();
+  const { currentTime, currentPose, animation, setCurrentPose, interacting } =
+    usePoserStore();
 
   useEffect(() => {
     if (animation) {
