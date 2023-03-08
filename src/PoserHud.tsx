@@ -14,6 +14,8 @@ import { Vector3 } from "three";
 import { chartruse, eigengrau, eigenlumin, eigenmid } from "./colors";
 import { EventHandlers } from "@react-three/fiber/dist/declarations/src/core/events";
 
+const hasAddedBone = localStorage.getItem("hasAddedBone") === "true";
+
 export type PoserHudProps = {
   width: number;
   height: number;
@@ -110,6 +112,12 @@ const NumericSliderInput = ({
       <mesh
         position={[(value / (max - min)) * width, 0, 0]}
         onPointerDown={handleMouseDown}
+        onPointerOver={() => {
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "auto";
+        }}
       >
         <circleGeometry args={[5, 7]} />
         <meshBasicMaterial color={eigenlumin} />
@@ -308,6 +316,7 @@ export function PoserHud({
   onInteractingChanged,
   ...groupProps
 }: PoserHudProps) {
+  const [helperMessage, setHelperMessage] = useState<string>("");
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSelectedKeyFrame, setCurrentSelectedKeyFrame] = useState<
@@ -396,15 +405,19 @@ export function PoserHud({
           const row = Math.floor(i / colsPerRow);
           const col = i % colsPerRow;
           return (
-            <Typography
+            <Button
               key={boneName}
-              size={1}
               position={[
-                -width / 2 + (width / colsPerRow) * col,
+                -width / 2 +
+                  (width / colsPerRow) * col +
+                  width / colsPerRow / 2,
                 height / 2 - 10 - row * 20,
                 0,
               ]}
-              onPointerUp={(_) => {
+              text={boneName}
+              width={width / colsPerRow}
+              onClick={() => {
+                localStorage.setItem("hasAddedBone", "true");
                 setAnimation((animation) => {
                   const newAnimation = {
                     ...animation,
@@ -430,10 +443,11 @@ export function PoserHud({
                   return newAnimation;
                 });
                 setShowBoneNames(false);
+                setHelperMessage(
+                  `You added ${boneName}! You can now adjust the sliders of it's x y z values.`
+                );
               }}
-            >
-              {boneName}
-            </Typography>
+            />
           );
         })}
       </group>
@@ -455,12 +469,13 @@ export function PoserHud({
         fontSize={1.5}
         position={[-width / 2 + PADDING, height / 2 - PADDING, 0]}
       >
-        Time: {currentTime.toFixed(2)}/{animation.length.toFixed(2)} seconds
+        Time: {currentTime.toFixed(2)}/{animation.length.toFixed(2)} seconds{" "}
+        {helperMessage.length > 0 ? `- ${helperMessage}` : ""}
       </Text>
       <Button
         text={isPlaying ? "Pause" : "Play"}
         width={100}
-        position={[-width / 2 + PADDING, -height / 2 + PADDING, 0]}
+        position={[width / 2 + PADDING - 180, height / 2 - 2 * PADDING, 0]}
         onClick={() => {
           isPlaying ? setIsPlaying(false) : setIsPlaying(true);
         }}
@@ -468,7 +483,7 @@ export function PoserHud({
       <Button
         text="time = 0"
         width={100}
-        position={[-width / 2 + PADDING + 100, -height / 2 + PADDING, 0]}
+        position={[width / 2 + PADDING - 70, height / 2 - 2 * PADDING, 0]}
         onClick={() => {
           setCurrentTime(0);
         }}
@@ -476,7 +491,7 @@ export function PoserHud({
       <Button
         width={100}
         text="Download Animation"
-        position={[width / 2 - PADDING, -height / 2 + PADDING + 50, 0]}
+        position={[width / 2 + PADDING - 70, -height / 2 + PADDING + 45, 0]}
         onClick={() => {
           const element = document.createElement("a");
           const file = new Blob([JSON.stringify(animation)], {
@@ -492,7 +507,7 @@ export function PoserHud({
       <Button
         width={100}
         text="About/Help"
-        position={[width / 2 - PADDING, -height / 2 + PADDING, 0]}
+        position={[width / 2 + PADDING - 180, -height / 2 + PADDING + 10, 0]}
         onClick={() => {
           let w = window.open("_blank");
           if (w) w.location = "https://github.com/richardanaya/avatar-poser/";
@@ -502,7 +517,7 @@ export function PoserHud({
       <Button
         width={100}
         text="Minimize"
-        position={[width / 2 - PADDING, -height / 2 + PADDING + 25, 0]}
+        position={[width / 2 + PADDING - 70, -height / 2 + PADDING + 10, 0]}
         onClick={() => {
           setMinimized(true);
         }}
@@ -511,7 +526,7 @@ export function PoserHud({
       <Button
         width={100}
         text="Add Keyframe"
-        position={[width / 2 - PADDING, -height / 2 + PADDING + 75, 0]}
+        position={[width / 2 + PADDING - 180, -height / 2 + PADDING + 80, 0]}
         onClick={() => {
           setAnimation({
             ...animation,
@@ -532,7 +547,11 @@ export function PoserHud({
           <Button
             width={100}
             text="Add Bone"
-            position={[width / 2 - PADDING, -height / 2 + PADDING + 125, 0]}
+            position={[
+              width / 2 + PADDING - 180,
+              -height / 2 + PADDING + 115,
+              0,
+            ]}
             onClick={() => {
               setShowBoneNames(true);
             }}
@@ -540,13 +559,17 @@ export function PoserHud({
           <Button
             width={100}
             text="Delete Bone"
-            position={[width / 2 - PADDING, -height / 2 + PADDING + 150, 0]}
+            position={[
+              width / 2 + PADDING - 70,
+              -height / 2 + PADDING + 115,
+              0,
+            ]}
             onClick={() => {}}
           />
           <Button
             width={100}
             text="Delete Keyframe"
-            position={[width / 2 - PADDING, -height / 2 + PADDING + 100, 0]}
+            position={[width / 2 + PADDING - 70, -height / 2 + PADDING + 80, 0]}
             onClick={() => {
               setAnimation({
                 ...animation,
@@ -558,9 +581,17 @@ export function PoserHud({
             }}
           />
           {Object.keys(currentKeyFrame.pose).length === 0 ? (
-            <Typography position={[0, 0, 0]} size={1.5}>
-              No bones are currently being animated in this keyframe.
-            </Typography>
+            <>
+              <Typography position={[0, 0, 0]} size={1.5}>
+                No bones are currently being animated in this keyframe.
+              </Typography>
+              {!hasAddedBone && (
+                <Typography position={[0, -20, 0]} size={1.5}>
+                  Add a bone using the menu on the right ( "neck" is suggested
+                  to see how this works ).
+                </Typography>
+              )}
+            </>
           ) : (
             Object.entries(currentKeyFrame.pose).map(([boneName, bone], i) => {
               const widthOfManipulators = (width * 4) / 5;
