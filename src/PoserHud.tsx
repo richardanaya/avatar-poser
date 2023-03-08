@@ -635,6 +635,11 @@ export function PoserHud({
                       };
                       return newAnimation;
                     });
+                    setHelperMessage(
+                      `Bone ${boneName} set to x:${_[0].toFixed(
+                        4
+                      )} y:${_[1].toFixed(4)} z:${_[2].toFixed(4)}`
+                    );
                   }}
                 />
               ) : (
@@ -663,6 +668,7 @@ export function PoserHud({
                       };
                       return newAnimation;
                     });
+                    setHelperMessage(`Bone ${boneName} set to ${_.toFixed(4)}`);
                   }}
                 />
               );
