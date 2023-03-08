@@ -279,13 +279,17 @@ const Timeline = ({
         <planeGeometry />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
-      <mesh position={[0, 0, 0]} scale={[width, 10, 1]}>
+      <mesh position={[0, 0, 0]} scale={[width, 10, 0]}>
         <planeGeometry />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
       <mesh
-        position={[(currentTime / animation.length) * width - width / 2, 0, 3]}
-        scale={[5, 5, 3]}
+        position={[
+          (currentTime / animation.length) * width - width / 2,
+          0,
+          0.011,
+        ]}
+        scale={[5, 5, 0]}
         onPointerOver={() => {
           document.body.style.cursor = "pointer";
         }}
@@ -301,8 +305,12 @@ const Timeline = ({
           return (
             <mesh
               key={i}
-              position={[(time / animation.length) * width - width / 2, 0, 0]}
-              scale={[10, 10, 1]}
+              position={[
+                (time / animation.length) * width - width / 2,
+                0,
+                0.01,
+              ]}
+              scale={[10, 10, 0]}
               onPointerDown={(_) => {
                 onSelectKeyFrame(i);
                 <meshBasicMaterial color={eigenmid} />;

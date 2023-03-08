@@ -110,9 +110,9 @@ export const Poser = ({ url }: PoserProps) => {
           <PoserHud
             width={1200}
             height={250}
-            position={[0, 0.5, 0.3]}
+            position={[0, 1.2, 0.5]}
             rotation={[-Math.PI / 4, 0, 0]}
-            scale={0.002}
+            scale={0.001}
             onTimeChange={(_) => setCurrentTime(_)}
             onAnimationChange={(_) => setAnimation(_)}
             onPointerDown={(_) => {
