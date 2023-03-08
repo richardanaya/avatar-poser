@@ -1,13 +1,12 @@
 <p align="center"><img src="public/avatar-poser.png"/></p>
+<p align="center">ＡＶＡＴＡＲ　ＰＯＳＥＲ</p>
 
-# Ａｖａｔａｒ　Ｐｏｓｅｒ
 
 A website for posing avatars in desktop and VR.
 
-
 `https://avatarposer.com/?model=<url>`
 
-# Ｃｏｍｐａｔｉｂｌｅ　Ａｖａｔａｒｓ
+#### Compatible Avatars
 
 This tool supports avatars with these rotational bone names:
 
