@@ -1,11 +1,19 @@
-# Avatar Poser
+<p align="center"><img src="public/avatar-poser.png"/></p>
+<p align="center">ＡＶＡＴＡＲ　ＰＯＳＥＲ</p>
 
-A website for posing avatars in desktop and VR.
+
+<p align="center">A website for posing avatars in desktop and VR.
 
 
-`https://avatarposer.com/?model=<url>`
+#### Play
 
-# Compatible Avatars 
+Go to the [website](https://avatarposer.com) and play with random avatars.
+
+#### How to use
+
+`https://avatarposer.com/?model=<url>`</p>
+
+#### Compatible Avatars
 
 This tool supports avatars with these rotational bone names:
 
@@ -85,3 +93,11 @@ We also support these transform groups:
 mouthOpen [0 to 1]
 mouthSmile [0 to 1]
 ```
+
+#### Contribute
+
+* Have a cool avatar you want in our random selection? 
+* Want to sling some code like a cyberspace cowboy?  
+* Want to help document for the good of humanity?
+
+Feel free to create an issue.
