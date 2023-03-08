@@ -8,7 +8,7 @@ import {
 } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import { PoseAnimation } from "./Poser";
-import { RoundedBox, Text } from "@react-three/drei";
+import { Box, RoundedBox, Text } from "@react-three/drei";
 import { allBones } from "./allBones";
 import { Vector3 } from "three";
 import { chartruse, eigengrau, eigenlumin, eigenmid } from "./colors";
@@ -194,7 +194,7 @@ const Button = ({
   let [hovered, setHovered] = useState(false);
   return (
     <Interactive
-      onSqueezeEnd={onClick}
+      onSelectEnd={onClick}
       onHover={() => {
         setHovered(true);
       }}
@@ -217,9 +217,9 @@ const Button = ({
           document.body.style.cursor = "auto";
         }}
       >
-        <RoundedBox args={[width, 23, 0]} radius={5}>
+        <Box args={[width, 23, 0]}>
           <meshBasicMaterial color={hovered ? "#444" : "#333"} />
-        </RoundedBox>
+        </Box>
         <Typography position={[0, 0, 1]}>{text}</Typography>
       </group>
     </Interactive>

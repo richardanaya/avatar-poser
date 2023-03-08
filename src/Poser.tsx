@@ -74,7 +74,7 @@ export const Poser = ({ url }: PoserProps) => {
             <OrthographicCamera makeDefault position={[0, 0, 100]} />
             <PoserHud
               width={editorWidth}
-              height={editorHeight}
+              height={Math.max(editorHeight, 200)}
               position={[0, offsetY, 0]}
               onTimeChange={(_) => setCurrentTime(_)}
               onAnimationChange={(_) => setAnimation(_)}
