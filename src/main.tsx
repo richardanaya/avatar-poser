@@ -10,19 +10,26 @@ import {
   Vignette,
 } from "@react-three/postprocessing";
 import { Environment, OrbitControls } from "@react-three/drei";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const ROTATION_STEP = Math.PI / 180;
 
 const App = () => {
   const [interacting, setInteracting] = useState(false);
+  const model = useMemo(
+    () =>
+      Math.random() < 0.5
+        ? "https://models.readyplayer.me/640765d93e6d860c1d738326.glb"
+        : "https://models.readyplayer.me/6407fbec0ed60d89a2c64367.glb",
+    []
+  );
   return (
     <Canvas>
       <color attach="background" args={["#16161b"]} />
       <ambientLight />
       <OrbitControls enableDamping={false} enabled={!interacting} />
       <Poser
-        url="https://models.readyplayer.me/640765d93e6d860c1d738326.glb"
+        url={model}
         onInteractingChanged={(_) => {
           setInteracting(_);
         }}

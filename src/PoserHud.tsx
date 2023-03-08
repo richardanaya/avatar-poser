@@ -223,7 +223,6 @@ const Timeline = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragStartCurrentTime, setDragStartCurrentTime] = useState(0);
-  const [didMove, setDidMove] = useState(false);
 
   const handleMouseDown = (e: ThreeEvent<PointerEvent>) => {
     setIsDragging(true);
@@ -253,6 +252,10 @@ const Timeline = ({
       onPointerMove={handleMouseMove}
       onPointerUp={handleMouseUp}
     >
+      <mesh position={[0, 0, 0]} scale={[width, 30, 1]}>
+        <planeGeometry />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
       <mesh position={[0, 0, 0]} scale={[width, 10, 1]}>
         <planeGeometry />
         <meshBasicMaterial color={eigenmid} />
@@ -350,9 +353,10 @@ export function PoserHud({
     }
   }, [isPlaying]);
 
-  const currentKeyFrame = currentSelectedKeyFrame
-    ? animation.keyframes[currentSelectedKeyFrame]
-    : undefined;
+  const currentKeyFrame =
+    currentSelectedKeyFrame !== null
+      ? animation.keyframes[currentSelectedKeyFrame]
+      : undefined;
 
   if (minimized) {
     return (
