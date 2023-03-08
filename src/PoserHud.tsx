@@ -479,6 +479,8 @@ export function PoserHud({
       {
         time: 0,
         pose: {
+          MouthOpen: 0.5,
+          MouthSmile: 0.5,
           Neck: {
             x: 0,
             y: 0,
@@ -633,7 +635,7 @@ export function PoserHud({
         }}
       />
       <Button
-        text="time = 0"
+        text="Replay"
         width={100}
         position={[width / 2 + PADDING - 70, height / 2 - 2 * PADDING, 0]}
         onClick={() => {
@@ -803,13 +805,14 @@ export function PoserHud({
                 <NumericSliderInput
                   key={boneName}
                   name={boneName}
-                  position={position}
-                  width={widthOfManipulators / colsPerRow}
+                  position={[position.x + 300, position.y, position.z]}
+                  width={(widthOfManipulators / colsPerRow) * 0.5}
                   value={bone as number}
-                  min={0}
+                  min={-1}
                   max={1}
                   large={isPresenting}
                   onChange={(_) => {
+                    console.log(boneName);
                     setAnimation((animation) => {
                       const newAnimation = {
                         ...animation,
