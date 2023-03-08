@@ -682,6 +682,7 @@ export function PoserHud({
         position={[width / 2 + PADDING - 70, height / 2 - 2 * PADDING, 0]}
         onClick={() => {
           setCurrentTime(0);
+          setIsPlaying(true);
         }}
       />
       <Button
@@ -724,15 +725,11 @@ export function PoserHud({
         text="Add Keyframe"
         position={[width / 2 + PADDING - 180, -height / 2 + PADDING + 80, 0]}
         onClick={() => {
+          const newKeyFrame = JSON.parse(JSON.stringify(currentKeyFrame));
+          newKeyFrame.time = currentTime;
           setAnimation({
             ...animation,
-            keyframes: [
-              ...animation.keyframes,
-              {
-                time: currentTime,
-                pose: {},
-              },
-            ],
+            keyframes: [...animation.keyframes, newKeyFrame],
           });
           setCurrentSelectedKeyFrame(animation.keyframes.length);
         }}

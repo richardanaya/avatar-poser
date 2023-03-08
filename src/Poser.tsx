@@ -51,11 +51,16 @@ export const Poser = ({ url }: PoserProps) => {
 
       const nextKeyframe = keyframes.find((_) => _.time > currentTime);
       if (nextKeyframe) {
-        const { time, pose: nextPose } = nextKeyframe;
-        const mostRecentKeyframe = keyframes.find((_) => _.time < currentTime);
+        const { time: nextTime, pose: nextPose } = nextKeyframe;
+        // get the last most recent
+        const mostRecentKeyframe = keyframes
+          .filter((_) => _.time < currentTime)
+          .sort((a, b) => a.time - b.time)
+          .pop();
+
         if (mostRecentKeyframe) {
           const { time: mostRecentTime, pose } = mostRecentKeyframe;
-          const timeDiff = time - mostRecentTime;
+          const timeDiff = nextTime - mostRecentTime;
           const timeSince = currentTime - mostRecentTime;
           const timeRatio = timeSince / timeDiff;
           for (const key in pose) {
