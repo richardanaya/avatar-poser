@@ -1,3 +1,5 @@
+<p align="center"><img src="public/avatar-poser.png"/></p>
+
 # Avatar Poser
 
 A website for posing avatars in desktop and VR.
