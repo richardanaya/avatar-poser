@@ -144,7 +144,9 @@ const NumericSliderInput = ({
         <planeGeometry args={[width, 4]} />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
-      <Typography position={[-width / 2 - PADDING, 0, 0]}>{name}</Typography>
+      <Typography position={[-width / 2 - PADDING, 0, 0]} align="right">
+        {name}
+      </Typography>
       <Interactive onSelectStart={isDragging ? undefined : onSelectStart}>
         <mesh
           position={[(value / (max - min)) * width, 0, 0]}
@@ -172,7 +174,7 @@ const NumericSliderInput = ({
   );
 };
 
-const VectorInput = ({
+const Vector3Input = ({
   name,
   value,
   width,
@@ -206,7 +208,7 @@ const VectorInput = ({
         onChange={(_) => onChange([_, value[1], value[2]])}
         position={[
           width * (1 - ratio) + (width * ratio) / 2,
-          large ? -30 : -14,
+          large ? 30 : 14,
           0,
         ]}
       />
@@ -230,9 +232,47 @@ const VectorInput = ({
         onChange={(_) => onChange([value[0], value[1], _])}
         position={[
           width * (1 - ratio) + (width * ratio) / 2,
-          large ? 30 : 14,
+          large ? -30 : -14,
           0,
         ]}
+      />
+    </group>
+  );
+};
+
+const Vector1Input = ({
+  name,
+  value,
+  width,
+  min,
+  max,
+  large,
+  onChange,
+  ...groupProps
+}: {
+  name: string;
+  value: [number, number, number];
+  width: number;
+  large: boolean;
+  min: number;
+  max: number;
+  onChange: (value: [number, number, number]) => void;
+} & GroupProps) => {
+  const ratio = large ? 5 / 6 : 2 / 3;
+  return (
+    <group {...groupProps}>
+      <Typography position={[10, 0, 0]} size={large ? 1.5 : 1} align="left">
+        {name}
+      </Typography>
+      <NumericSliderInput
+        name=""
+        value={value[0]}
+        width={width * ratio}
+        min={min}
+        max={max}
+        large={large}
+        onChange={(_) => onChange([_, value[1], value[2]])}
+        position={[width * (1 - ratio) + (width * ratio) / 2, 0, 0]}
       />
     </group>
   );
@@ -764,7 +804,7 @@ export function PoserHud({
                 0
               );
               return isRotation ? (
-                <VectorInput
+                <Vector3Input
                   key={boneName}
                   name={boneName}
                   position={position}
@@ -802,17 +842,16 @@ export function PoserHud({
                   }}
                 />
               ) : (
-                <NumericSliderInput
+                <Vector1Input
                   key={boneName}
                   name={boneName}
-                  position={[position.x + 300, position.y, position.z]}
-                  width={(widthOfManipulators / colsPerRow) * 0.5}
-                  value={bone as number}
+                  position={position}
+                  width={widthOfManipulators / colsPerRow}
+                  value={[bone, 0, 0]}
                   min={-1}
                   max={1}
                   large={isPresenting}
                   onChange={(_) => {
-                    console.log(boneName);
                     setAnimation((animation) => {
                       const newAnimation = {
                         ...animation,
@@ -822,14 +861,16 @@ export function PoserHud({
                             ...keyframe,
                             pose: {
                               ...keyframe.pose,
-                              [boneName]: _,
+                              [boneName]: _[0],
                             },
                           };
                         }),
                       };
                       return newAnimation;
                     });
-                    setHelperMessage(`Bone ${boneName} set to ${_.toFixed(4)}`);
+                    setHelperMessage(
+                      `Bone ${boneName} set to ${_[0].toFixed(4)}`
+                    );
                   }}
                 />
               );

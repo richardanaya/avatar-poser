@@ -1325,10 +1325,10 @@ react-refresh@^0.14.0:
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.14.0.tgz#4e02825378a5f227079554d4284889354e5f553e"
   integrity sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==
 
-react-three-avatar@0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/react-three-avatar/-/react-three-avatar-0.0.4.tgz#be6383484680283700ee9b17d3890bf66b9b868b"
-  integrity sha512-/6mLX82ZOh8mr7mILFjd0iYBdNwuPL+sN65oJ2q+KilH/E2XiSiLr/vmK17j7canFK3mnYYDnVquJQykzZMbWQ==
+react-three-avatar@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/react-three-avatar/-/react-three-avatar-0.0.5.tgz#904bce2755897387fc913ebc280eebfbfd6cab24"
+  integrity sha512-lwfsRCsVAzMBk10UgwOoz+Xpkg2m7qcWNRFoGTGdrD41egK3Ku8KscD/CJdu9Mm0J6PDJVXLn9AxfsEBX04NSA==
   dependencies:
     "@react-three/drei" "^9.57.0"
     "@react-three/fiber" "^8.11.9"
