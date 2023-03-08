@@ -540,7 +540,7 @@ export function PoserHud({
 
   useEffect(() => {
     if (isPlaying) {
-      const rate = 0.05;
+      const rate = 1 / 60;
       const handle = setInterval(() => {
         setCurrentTime((currentTime) => {
           const newTime = currentTime + rate;
