@@ -11,7 +11,17 @@ Go to the [website](https://avatarposer.com) and play with random avatars.
 
 #### How to use
 
-`https://avatarposer.com/?model=<url>`</p>
+Use your own custom model
+
+`https://avatarposer.com/?model=<url>`
+
+Give your animation a specific length
+
+`https://avatarposer.com/?length=10`
+
+Add postprocessing shaders
+
+`https://avatarposer.com/?fancy=true`
 
 #### Compatible Avatars
 
@@ -100,4 +110,4 @@ mouthSmile [-1 to 1]
 * Want to sling some code like a cyberspace cowboy?  
 * Want to help document for the good of humanity?
 
-Feel free to create an issue.
+Feel free to create an issue or pull request.
