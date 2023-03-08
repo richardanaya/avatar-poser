@@ -241,7 +241,6 @@ const Timeline = ({
   };
 
   const handleMouseUp = () => {
-    console.log("mouse up");
     setIsDragging(false);
   };
 
@@ -313,7 +312,7 @@ export function PoserHud({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSelectedKeyFrame, setCurrentSelectedKeyFrame] = useState<
     number | null
-  >(null);
+  >(0);
   const [showBoneNames, setShowBoneNames] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [animation, setAnimation] = useState<PoseAnimation>({
