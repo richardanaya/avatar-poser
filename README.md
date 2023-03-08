@@ -90,8 +90,8 @@ RightToe_End
 We also support these transform groups:
 
 ```
-mouthOpen [0 to 1]
-mouthSmile [0 to 1]
+mouthOpen [-1 to 1]
+mouthSmile [-1 to 1]
 ```
 
 #### Contribute
