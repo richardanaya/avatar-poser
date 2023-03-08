@@ -48,12 +48,55 @@ export const Poser = ({ url }: PoserProps) => {
         }
         Object.assign(newPose, pose);
       }
+
+      const nextKeyframe = keyframes.find((_) => _.time > currentTime);
+      if (nextKeyframe) {
+        const { time, pose: nextPose } = nextKeyframe;
+        const mostRecentKeyframe = keyframes.find((_) => _.time < currentTime);
+        if (mostRecentKeyframe) {
+          const { time: mostRecentTime, pose } = mostRecentKeyframe;
+          const timeDiff = time - mostRecentTime;
+          const timeSince = currentTime - mostRecentTime;
+          const timeRatio = timeSince / timeDiff;
+          for (const key in pose) {
+            // @ts-ignore
+            const value = pose[key] as
+              | number
+              | undefined
+              | { x: number; y: number; z: number };
+            if (value) {
+              // @ts-ignore
+              const nextValue = nextPose[key] as
+                | number
+                | undefined
+                | { x: number; y: number; z: number };
+              if (nextValue) {
+                if (typeof value === "number") {
+                  // @ts-ignore
+                  newPose[key] = value + (nextValue - value) * timeRatio;
+                } else {
+                  if (typeof nextValue === "number") {
+                  } else {
+                    // @ts-ignore
+                    newPose[key] = {
+                      x: value.x + (nextValue.x - value.x) * timeRatio,
+                      y: value.y + (nextValue.y - value.y) * timeRatio,
+                      z: value.z + (nextValue.z - value.z) * timeRatio,
+                    };
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
       setCurrentPose(newPose);
     }
   }, [currentTime, animation]);
 
   const [width, height] = useWindowSize();
-
+  fancy;
   const offsetY = -height / 3;
   const editorHeight = height / 4;
   const editorWidth = width * 0.9;

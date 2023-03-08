@@ -111,7 +111,6 @@ const NumericSliderInput = ({
       if (isDragging) {
         const delta = sliderVector.x - dragStartX;
         const newValue = dragStartValue + (delta / width) * (max - min);
-        console.log(newValue, min, max);
         onChange(Math.min(Math.max(min, newValue), max));
       }
     },
@@ -462,13 +461,13 @@ const Timeline = ({
         animation.keyframes.map(({ time }, i) => {
           return (
             <Interactive
+              key={i}
               onSelectEnd={(_) => {
                 onSelectKeyFrame(i);
                 <meshBasicMaterial color={eigenmid} />;
               }}
             >
               <mesh
-                key={i}
                 position={[
                   (time / animation.length) * width - width / 2,
                   0,
@@ -502,6 +501,7 @@ export function PoserHud({
   width,
   height,
   onAnimationChange,
+  onTimeChange,
   onInteractingChanged,
   ...groupProps
 }: PoserHudProps) {
@@ -544,8 +544,10 @@ export function PoserHud({
         setCurrentTime((currentTime) => {
           const newTime = currentTime + 0.1;
           if (newTime > animation.length) {
+            onTimeChange(0);
             return 0;
           }
+          onTimeChange(newTime);
           return newTime;
         });
       }, 100);
@@ -898,6 +900,7 @@ export function PoserHud({
         animation={animation}
         onTimeChange={(_) => {
           setCurrentTime(_);
+          onTimeChange(_);
         }}
       />
     </group>
