@@ -460,18 +460,14 @@ export function PoserHud({
         <boxGeometry args={[width, height]} />
         <meshBasicMaterial color="black" transparent opacity={0.3} />
       </mesh>
-      <Text
-        scale={[10, 10, 10]}
-        color="white"
-        font="./Inter-Thin.woff"
-        anchorX="left"
-        anchorY="top"
-        fontSize={1.5}
+      <Typography
+        align="left"
+        size={1.5}
         position={[-width / 2 + PADDING, height / 2 - PADDING, 0]}
       >
         Time: {currentTime.toFixed(2)}/{animation.length.toFixed(2)} seconds{" "}
         {helperMessage.length > 0 ? `- ${helperMessage}` : ""}
-      </Text>
+      </Typography>
       <Button
         text={isPlaying ? "Pause" : "Play"}
         width={100}
@@ -677,19 +673,12 @@ export function PoserHud({
         </>
       )}
       {!currentKeyFrame && (
-        <Text
-          scale={[10, 10, 10]}
-          color="white"
-          anchorX="center"
-          anchorY="top"
-          fontSize={1}
-          position={[0, 0, 0]}
-        >
+        <Typography position={[0, 0, 0]}>
           {(animation.keyframes.length === 0
             ? "No keyframes in this animation."
             : "Select a keyframe to edit it."
           ).toUpperCase()}
-        </Text>
+        </Typography>
       )}
       <Timeline
         onInteractingChanged={onInteractingChanged}

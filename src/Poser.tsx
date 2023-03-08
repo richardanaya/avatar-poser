@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import { useWindowSize } from "@react-hook/window-size";
 import { PoserHud } from "./PoserHud";
 import { useXR } from "@react-three/xr";
+import {
+  Bloom,
+  DepthOfField,
+  EffectComposer,
+  Noise,
+  Vignette,
+} from "@react-three/postprocessing";
+import { Group } from "three";
 
 export type PoseAnimation = {
   length: number;
@@ -62,7 +70,7 @@ export const Poser = ({ url }: PoserProps) => {
             pose={currentPose}
             scale={[4, 4, 4]}
           />
-          <Hud renderPriority={1}>
+          <Hud renderPriority={4}>
             <OrthographicCamera makeDefault position={[0, 0, 100]} />
             <PoserHud
               width={editorWidth}
@@ -83,15 +91,27 @@ export const Poser = ({ url }: PoserProps) => {
             <ambientLight intensity={1} />
             <pointLight position={[200, 200, 100]} intensity={0.5} />
           </Hud>
+          <EffectComposer>
+            <DepthOfField
+              focusDistance={0}
+              focalLength={0.02}
+              bokehScale={2}
+              height={480}
+            />
+            <Bloom luminanceThreshold={0} luminanceSmoothing={2} height={300} />
+            <Noise opacity={0.02} />
+            <Vignette eskil={false} offset={0.1} darkness={1.1} />
+          </EffectComposer>
         </>
       )}
       {isPresenting && (
-        <>
-          <Avatar url={url} position={[0, 0, 0]} pose={currentPose} />
+        <group position={[0, 0, -1]}>
+          <Avatar url={url} pose={currentPose} />
           <PoserHud
             width={editorWidth}
             height={editorHeight}
             position={[0, 0.5, 0.2]}
+            rotation={[-Math.PI / 4, 0, 0]}
             scale={0.002}
             onTimeChange={(_) => setCurrentTime(_)}
             onAnimationChange={(_) => setAnimation(_)}
@@ -105,7 +125,7 @@ export const Poser = ({ url }: PoserProps) => {
               setInteracting(_);
             }}
           />
-        </>
+        </group>
       )}
     </>
   );
