@@ -252,7 +252,9 @@ const Button = ({
   let [hovered, setHovered] = useState(false);
   return (
     <Interactive
-      onSelectEnd={onClick}
+      onSelectEnd={() => {
+        onClick();
+      }}
       onHover={() => {
         setHovered(true);
       }}
@@ -267,7 +269,10 @@ const Button = ({
             ? [position[0], position[1], position[2] + 5]
             : [position[0], position[1], position[2]]
         }
-        onClick={onClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
         onPointerOver={() => {
           document.body.style.cursor = "pointer";
         }}
@@ -745,12 +750,13 @@ export function PoserHud({
               const colsPerRow = isPresenting ? 1 : 3;
               const row = Math.floor(i / colsPerRow);
               const col = i % colsPerRow;
-              const isRotation = true;
-              !["MouthSmile", "MouthOpen"].includes(boneName);
+              const isRotation = !["MouthSmile", "MouthOpen"].includes(
+                boneName
+              );
               const position = new Vector3(
                 -width / 2 + (widthOfManipulators / colsPerRow) * col + 30,
                 height / 2 -
-                  20 -
+                  30 -
                   row * (isPresenting ? 100 : 50) -
                   (isPresenting ? 100 : 60),
                 0
