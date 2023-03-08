@@ -1,0 +1,33 @@
+{
+  "name": "avatar-poser",
+  "version": "0.0.2",
+  "type": "module",
+  "license": "MIT",
+  "main": "dist/react-three-avatar.umd.cjs",
+  "types": "dist/lib.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "types": "tsc  --declaration --emitDeclarationOnly --p tsconfig.types.json --outDir dist"
+  },
+  "dependencies": {
+    "@react-hook/window-size": "^3.1.1",
+    "@react-three/drei": "^9.57.0",
+    "@react-three/fiber": "^8.11.9",
+    "@react-three/postprocessing": "^2.7.0",
+    "@types/three": "^0.149.0",
+    "leva": "^0.9.34",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-three-avatar": "^0.0.3",
+    "three": "^0.150.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@vitejs/plugin-react": "^3.1.0",
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0"
+  }
+}
