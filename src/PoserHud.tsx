@@ -66,29 +66,23 @@ const NumericSliderInput = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragStartValue, setDragStartValue] = useState(0);
-  const [didMove, setDidMove] = useState(false);
 
   const handleMouseDown = (e: ThreeEvent<PointerEvent>) => {
     setIsDragging(true);
     setDragStartX(e.clientX);
     setDragStartValue(value);
-    setDidMove(false);
   };
 
   const handleMouseMove = (e: ThreeEvent<PointerEvent>) => {
     if (isDragging) {
       const delta = e.clientX - dragStartX;
       const newValue = dragStartValue + (delta / width) * (max - min);
-      onChange(newValue);
-      setDidMove(true);
+      onChange(Math.min(Math.max(min, newValue), max));
     }
   };
 
   const handleMouseUp = (e: ThreeEvent<PointerEvent>) => {
     setIsDragging(false);
-    if (!didMove) {
-      onChange(value);
-    }
   };
   let sliderRef = useRef<Mesh>(null);
 
@@ -102,7 +96,6 @@ const NumericSliderInput = ({
         setIsDragging(true);
         setDragStartX(sliderVector.x);
         setDragStartValue(value);
-        setDidMove(false);
       }
     },
     [sliderRef]
@@ -118,8 +111,8 @@ const NumericSliderInput = ({
       if (isDragging) {
         const delta = sliderVector.x - dragStartX;
         const newValue = dragStartValue + (delta / width) * (max - min);
-        onChange(newValue);
-        setDidMove(true);
+        console.log(newValue, min, max);
+        onChange(Math.min(Math.max(min, newValue), max));
       }
     },
     [sliderRef, dragStartX, isDragging]
@@ -127,9 +120,6 @@ const NumericSliderInput = ({
 
   const onSelectEnd: XRInteractionHandler = (e) => {
     setIsDragging(false);
-    if (!didMove) {
-      onChange(value);
-    }
   };
 
   const [hovered, setHovered] = useState(false);
@@ -144,18 +134,25 @@ const NumericSliderInput = ({
 
   return (
     <group {...groupProps}>
-      <Interactive onMove={onSelectMove} onSelectEnd={onSelectEnd}>
+      <Interactive
+        onMove={onSelectMove}
+        onSelectEnd={onSelectEnd}
+        onBlur={onSelectEnd}
+      >
         <mesh
-          position={[width / 2, 0, -0.01]}
+          position={[0, 0, -0.01]}
           onPointerMove={handleMouseMove}
           onPointerUp={handleMouseUp}
+          onPointerLeave={handleMouseUp}
           ref={sliderRef}
         >
-          <planeGeometry args={[width, 12]} />
+          <planeGeometry
+            args={[isDragging ? 10000 : 0, isDragging ? 10000 : 0]}
+          />
           <meshBasicMaterial transparent opacity={0} />
         </mesh>
       </Interactive>
-      <mesh position={[width / 2, 0, -0.01]}>
+      <mesh position={[0, 0, -0.01]}>
         <planeGeometry args={[width, 4]} />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
@@ -218,7 +215,11 @@ const VectorInput = ({
         max={max}
         large={large}
         onChange={(_) => onChange([_, value[1], value[2]])}
-        position={[width * (1 - ratio), large ? -30 : -14, 0]}
+        position={[
+          width * (1 - ratio) + (width * ratio) / 2,
+          large ? -30 : -14,
+          0,
+        ]}
       />
       <NumericSliderInput
         name="y"
@@ -228,7 +229,7 @@ const VectorInput = ({
         max={max}
         large={large}
         onChange={(_) => onChange([value[0], _, value[2]])}
-        position={[width * (1 - ratio), 0, 0]}
+        position={[width * (1 - ratio) + (width * ratio) / 2, 0, 0]}
       />
       <NumericSliderInput
         name="z"
@@ -238,7 +239,11 @@ const VectorInput = ({
         max={max}
         large={large}
         onChange={(_) => onChange([value[0], value[1], _])}
-        position={[width * (1 - ratio), large ? 30 : 14, 0]}
+        position={[
+          width * (1 - ratio) + (width * ratio) / 2,
+          large ? 30 : 14,
+          0,
+        ]}
       />
     </group>
   );
@@ -337,7 +342,6 @@ const Timeline = ({
 
   const onSelectStart: XRInteractionHandler = useCallback(
     (e) => {
-      debugger;
       if (sliderRef.current) {
         const intersection = e.intersections[0];
         const localVector = intersection.point;
@@ -380,7 +384,7 @@ const Timeline = ({
       <Interactive onMove={onSelectMove} onSelectEnd={onSelectEnd}>
         <mesh
           position={[0, 0, 0]}
-          scale={[width, 30, 0.0001]}
+          scale={[isDragging ? 10000 : 0, isDragging ? 10000 : 0, 0.0001]}
           onPointerMove={handleMouseMove}
           onPointerUp={handleMouseUp}
         >

@@ -25,6 +25,9 @@ export type PoserProps = {
   url: string;
 };
 
+const queryParams = new URLSearchParams(window.location.search);
+const fancy = queryParams.get("fancy") === "true";
+
 export const Poser = ({ url }: PoserProps) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [animation, setAnimation] = useState<PoseAnimation | null>({
@@ -70,7 +73,7 @@ export const Poser = ({ url }: PoserProps) => {
             pose={currentPose}
             scale={[4, 4, 4]}
           />
-          <Hud renderPriority={4}>
+          <Hud renderPriority={fancy ? 4 : 1}>
             <OrthographicCamera makeDefault position={[0, 0, 100]} />
             <PoserHud
               width={editorWidth}
@@ -91,17 +94,23 @@ export const Poser = ({ url }: PoserProps) => {
             <ambientLight intensity={1} />
             <pointLight position={[200, 200, 100]} intensity={0.5} />
           </Hud>
-          <EffectComposer>
-            <DepthOfField
-              focusDistance={0}
-              focalLength={0.02}
-              bokehScale={2}
-              height={480}
-            />
-            <Bloom luminanceThreshold={0} luminanceSmoothing={2} height={300} />
-            <Noise opacity={0.02} />
-            <Vignette eskil={false} offset={0.1} darkness={1.1} />
-          </EffectComposer>
+          {fancy && (
+            <EffectComposer>
+              <DepthOfField
+                focusDistance={0}
+                focalLength={0.02}
+                bokehScale={2}
+                height={480}
+              />
+              <Bloom
+                luminanceThreshold={0}
+                luminanceSmoothing={2}
+                height={300}
+              />
+              <Noise opacity={0.02} />
+              <Vignette eskil={false} offset={0.1} darkness={1.1} />
+            </EffectComposer>
+          )}
         </>
       )}
       {isPresenting && (
