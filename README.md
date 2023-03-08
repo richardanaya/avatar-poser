@@ -7,7 +7,7 @@
 
 #### Play
 
-Go to the [website](avatarposer.com) and play with random avatars.
+Go to the [website](https://avatarposer.com) and play with random avatars.
 
 #### How to use
 
