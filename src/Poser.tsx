@@ -112,21 +112,65 @@ export const Poser = ({ url }: PoserProps) => {
 
   return (
     <>
-      {!isPresenting && (
-        <>
-          <OrbitControls enableDamping={false} enabled={!interacting} />
-          <Avatar
-            url={url}
-            position={[0, -5, 0]}
-            pose={currentPose}
-            scale={[4, 4, 4]}
-          />
-          <Hud renderPriority={fancy ? 4 : 1}>
-            <OrthographicCamera makeDefault position={[0, 0, 100]} />
+      <group position={isPresenting ? [0, 0, -1] : [0, 0, 0]}>
+        <Avatar
+          url={url}
+          pose={currentPose}
+          position={!isPresenting ? [0, -5, 0] : undefined}
+          scale={!isPresenting ? [4, 4, 4] : undefined}
+        />
+        {!isPresenting && (
+          <>
+            <OrbitControls enableDamping={false} enabled={!interacting} />
+
+            <Hud renderPriority={fancy ? 4 : 1}>
+              <OrthographicCamera makeDefault position={[0, 0, 100]} />
+              <PoserHud
+                width={editorWidth}
+                height={Math.max(editorHeight, 200)}
+                position={[0, offsetY, 0]}
+                onTimeChange={(_) => setCurrentTime(_)}
+                onAnimationChange={(_) => setAnimation(_)}
+                onPointerDown={(_) => {
+                  setInteracting(true);
+                }}
+                onPointerUp={(_) => {
+                  setInteracting(false);
+                }}
+                onInteractingChanged={(_) => {
+                  setInteracting(_);
+                }}
+              />
+              <ambientLight intensity={1} />
+              <pointLight position={[200, 200, 100]} intensity={0.5} />
+            </Hud>
+            {fancy && (
+              <EffectComposer>
+                <DepthOfField
+                  focusDistance={0}
+                  focalLength={0.02}
+                  bokehScale={2}
+                  height={480}
+                />
+                <Bloom
+                  luminanceThreshold={0}
+                  luminanceSmoothing={2}
+                  height={300}
+                />
+                <Noise opacity={0.02} />
+                <Vignette eskil={false} offset={0.1} darkness={1.1} />
+              </EffectComposer>
+            )}
+          </>
+        )}
+        {isPresenting && (
+          <>
             <PoserHud
-              width={editorWidth}
-              height={Math.max(editorHeight, 200)}
-              position={[0, offsetY, 0]}
+              width={1200}
+              height={250}
+              position={[0, 1.2, 0.5]}
+              rotation={[-Math.PI / 4, 0, 0]}
+              scale={0.001}
               onTimeChange={(_) => setCurrentTime(_)}
               onAnimationChange={(_) => setAnimation(_)}
               onPointerDown={(_) => {
@@ -139,51 +183,9 @@ export const Poser = ({ url }: PoserProps) => {
                 setInteracting(_);
               }}
             />
-            <ambientLight intensity={1} />
-            <pointLight position={[200, 200, 100]} intensity={0.5} />
-          </Hud>
-          {fancy && (
-            <EffectComposer>
-              <DepthOfField
-                focusDistance={0}
-                focalLength={0.02}
-                bokehScale={2}
-                height={480}
-              />
-              <Bloom
-                luminanceThreshold={0}
-                luminanceSmoothing={2}
-                height={300}
-              />
-              <Noise opacity={0.02} />
-              <Vignette eskil={false} offset={0.1} darkness={1.1} />
-            </EffectComposer>
-          )}
-        </>
-      )}
-      {isPresenting && (
-        <group position={[0, 0, -1]}>
-          <Avatar url={url} pose={currentPose} />
-          <PoserHud
-            width={1200}
-            height={250}
-            position={[0, 1.2, 0.5]}
-            rotation={[-Math.PI / 4, 0, 0]}
-            scale={0.001}
-            onTimeChange={(_) => setCurrentTime(_)}
-            onAnimationChange={(_) => setAnimation(_)}
-            onPointerDown={(_) => {
-              setInteracting(true);
-            }}
-            onPointerUp={(_) => {
-              setInteracting(false);
-            }}
-            onInteractingChanged={(_) => {
-              setInteracting(_);
-            }}
-          />
-        </group>
-      )}
+          </>
+        )}
+      </group>
     </>
   );
 };

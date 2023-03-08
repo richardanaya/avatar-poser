@@ -522,8 +522,8 @@ export function PoserHud({
           MouthOpen: 0.5,
           MouthSmile: 0.5,
           Neck: {
-            x: 0,
-            y: 0,
+            x: 0.6385,
+            y: -0.3685,
             z: 0,
           },
         },
