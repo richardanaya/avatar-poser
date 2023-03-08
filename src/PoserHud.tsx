@@ -207,7 +207,7 @@ const VectorInput = ({
   const ratio = large ? 5 / 6 : 2 / 3;
   return (
     <group {...groupProps}>
-      <Typography position={[10, 0, 0]} size={1} align="left">
+      <Typography position={[10, 0, 0]} size={large ? 1.5 : 1} align="left">
         {name}
       </Typography>
       <NumericSliderInput
@@ -749,7 +749,6 @@ export function PoserHud({
             </>
           ) : (
             Object.entries(currentKeyFrame.pose).map(([boneName, bone], i) => {
-              const isPresenting = true;
               const widthOfManipulators = (width * 7.7) / 10;
               const colsPerRow = isPresenting ? 1 : 3;
               const row = Math.floor(i / colsPerRow);
