@@ -14,6 +14,7 @@ const queryParams = new URLSearchParams(window.location.search);
 debugger;
 const autoplay = queryParams.get("autoplay") === "true";
 const animationBase64 = queryParams.get("animation");
+const animLength = queryParams.get("length");
 
 export type PoserHudProps = {
   width: number;
@@ -523,7 +524,7 @@ export function PoserHud({
   const [animation, setAnimation] = useState<PoseAnimation>(() =>
     animationBase64 === null
       ? {
-          length: 15,
+          length: animLength !== null ? parseFloat(animLength) : 15,
           keyframes: [
             {
               time: 0,
