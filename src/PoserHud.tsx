@@ -11,7 +11,6 @@ import { Interactive, useXR, XRInteractionHandler } from "@react-three/xr";
 const hasAddedBone = localStorage.getItem("hasAddedBone") === "true";
 
 const queryParams = new URLSearchParams(window.location.search);
-debugger;
 const autoplay = queryParams.get("autoplay") === "true";
 const animationBase64 = queryParams.get("animation");
 const animLength = queryParams.get("length");
