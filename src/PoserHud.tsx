@@ -6,7 +6,7 @@ import { allBones } from "./allBones";
 import { Mesh, Vector3 } from "three";
 import { chartruse, eigenlumin, eigenmid } from "./colors";
 import { EventHandlers } from "@react-three/fiber/dist/declarations/src/core/events";
-import { Interactive, XRInteractionHandler } from "@react-three/xr";
+import { Interactive, useXR, XRInteractionHandler } from "@react-three/xr";
 
 const hasAddedBone = localStorage.getItem("hasAddedBone") === "true";
 
@@ -51,11 +51,13 @@ const NumericSliderInput = ({
   width,
   min,
   max,
+  large,
   onChange,
   ...groupProps
 }: {
   name: string;
   value: number;
+  large: boolean;
   width: number;
   min: number;
   max: number;
@@ -174,7 +176,7 @@ const NumericSliderInput = ({
             document.body.style.cursor = "auto";
           }}
         >
-          <planeGeometry args={[5, 7]} />
+          <circleGeometry args={large ? [15, 15] : [7, 7]} />
           <meshBasicMaterial
             color={isDragging || hovered ? chartruse : eigenlumin}
           />
@@ -190,16 +192,19 @@ const VectorInput = ({
   width,
   min,
   max,
+  large,
   onChange,
   ...groupProps
 }: {
   name: string;
   value: [number, number, number];
   width: number;
+  large: boolean;
   min: number;
   max: number;
   onChange: (value: [number, number, number]) => void;
 } & GroupProps) => {
+  const ratio = large ? 5 / 6 : 2 / 3;
   return (
     <group {...groupProps}>
       <Typography position={[10, 0, 0]} size={1} align="left">
@@ -208,29 +213,32 @@ const VectorInput = ({
       <NumericSliderInput
         name="x"
         value={value[0]}
-        width={(width * 2) / 3}
+        width={width * ratio}
         min={min}
         max={max}
+        large={large}
         onChange={(_) => onChange([_, value[1], value[2]])}
-        position={[(width * 1) / 3, -14, 0]}
+        position={[width * (1 - ratio), large ? -30 : -14, 0]}
       />
       <NumericSliderInput
         name="y"
         value={value[1]}
-        width={(width * 2) / 3}
+        width={width * ratio}
         min={min}
         max={max}
+        large={large}
         onChange={(_) => onChange([value[0], _, value[2]])}
-        position={[(width * 1) / 3, 0, 0]}
+        position={[width * (1 - ratio), 0, 0]}
       />
       <NumericSliderInput
         name="z"
         value={value[2]}
-        width={(width * 2) / 3}
+        width={width * ratio}
         min={min}
         max={max}
+        large={large}
         onChange={(_) => onChange([value[0], value[1], _])}
-        position={[(width * 1) / 3, 14, 0]}
+        position={[width * (1 - ratio), large ? 30 : 14, 0]}
       />
     </group>
   );
@@ -398,9 +406,9 @@ const Timeline = ({
           position={[
             (currentTime / animation.length) * width - width / 2,
             0,
-            0.011,
+            0.02,
           ]}
-          scale={[5, 5, 0.001]}
+          scale={[10, 30, 0.001]}
           onPointerOver={() => {
             document.body.style.cursor = "pointer";
           }}
@@ -408,7 +416,7 @@ const Timeline = ({
             document.body.style.cursor = "auto";
           }}
         >
-          <circleGeometry />
+          <planeGeometry />
           <meshBasicMaterial color={hovered ? "red" : chartruse} />
         </mesh>
       </Interactive>
@@ -514,6 +522,8 @@ export function PoserHud({
     currentSelectedKeyFrame !== null
       ? animation.keyframes[currentSelectedKeyFrame]
       : undefined;
+
+  const { isPresenting } = useXR();
 
   if (minimized) {
     return (
@@ -739,15 +749,19 @@ export function PoserHud({
             </>
           ) : (
             Object.entries(currentKeyFrame.pose).map(([boneName, bone], i) => {
-              const widthOfManipulators = (width * 4) / 5;
-              const colsPerRow = 3;
+              const isPresenting = true;
+              const widthOfManipulators = (width * 7.7) / 10;
+              const colsPerRow = isPresenting ? 1 : 3;
               const row = Math.floor(i / colsPerRow);
               const col = i % colsPerRow;
               const isRotation = true;
               !["MouthSmile", "MouthOpen"].includes(boneName);
               const position = new Vector3(
                 -width / 2 + (widthOfManipulators / colsPerRow) * col + 30,
-                height / 2 - 20 - row * 50 - 60,
+                height / 2 -
+                  20 -
+                  row * (isPresenting ? 100 : 50) -
+                  (isPresenting ? 100 : 60),
                 0
               );
               return isRotation ? (
@@ -759,6 +773,7 @@ export function PoserHud({
                   value={[bone.x, bone.y, bone.z]}
                   min={-Math.PI}
                   max={Math.PI}
+                  large={isPresenting}
                   onChange={(_) => {
                     setAnimation((animation) => {
                       const newAnimation = {
@@ -796,6 +811,7 @@ export function PoserHud({
                   value={bone as number}
                   min={0}
                   max={1}
+                  large={isPresenting}
                   onChange={(_) => {
                     setAnimation((animation) => {
                       const newAnimation = {
