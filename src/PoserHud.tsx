@@ -10,9 +10,15 @@ import { Interactive, useXR, XRInteractionHandler } from "@react-three/xr";
 
 const hasAddedBone = localStorage.getItem("hasAddedBone") === "true";
 
+const queryParams = new URLSearchParams(window.location.search);
+debugger;
+const autoplay = queryParams.get("autoplay") === "true";
+const animationBase64 = queryParams.get("animation");
+
 export type PoserHudProps = {
   width: number;
   height: number;
+  url: string;
   onTimeChange: (time: number) => void;
   onAnimationChange: (animation: PoseAnimation) => void;
   onInteractingChanged: (interacting: boolean) => void;
@@ -500,6 +506,7 @@ const Timeline = ({
 export function PoserHud({
   width,
   height,
+  url,
   onAnimationChange,
   onTimeChange,
   onInteractingChanged,
@@ -507,29 +514,33 @@ export function PoserHud({
 }: PoserHudProps) {
   const [helperMessage, setHelperMessage] = useState<string>("");
   const [currentTime, setCurrentTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(autoplay);
   const [currentSelectedKeyFrame, setCurrentSelectedKeyFrame] = useState<
     number | null
   >(0);
   const [showBoneNames, setShowBoneNames] = useState(false);
   const [minimized, setMinimized] = useState(false);
-  const [animation, setAnimation] = useState<PoseAnimation>({
-    length: 15,
-    keyframes: [
-      {
-        time: 0,
-        pose: {
-          MouthOpen: 0.5,
-          MouthSmile: 0.5,
-          Neck: {
-            x: 0.6385,
-            y: -0.3685,
-            z: 0,
-          },
-        },
-      },
-    ],
-  });
+  const [animation, setAnimation] = useState<PoseAnimation>(() =>
+    animationBase64 === null
+      ? {
+          length: 15,
+          keyframes: [
+            {
+              time: 0,
+              pose: {
+                MouthOpen: 0.5,
+                MouthSmile: 0.5,
+                Neck: {
+                  x: 0.6385,
+                  y: -0.3685,
+                  z: 0,
+                },
+              },
+            },
+          ],
+        }
+      : JSON.parse(atob(animationBase64))
+  );
   const [playIntervalHandle, setPlayIntervalHandle] = useState<number | null>(
     null
   );
@@ -684,6 +695,16 @@ export function PoserHud({
         onClick={() => {
           setCurrentTime(0);
           setIsPlaying(true);
+        }}
+      />
+      <Button
+        width={100}
+        text="Share URL to Cipboard"
+        position={[width / 2 + PADDING - 180, -height / 2 + PADDING + 45, 0]}
+        onClick={() => {
+          const animationAsBase64 = btoa(JSON.stringify(animation));
+          const shareUrl = `${window.location.origin}/?model=${url}&autoplay=true&animation=${animationAsBase64}`;
+          navigator.clipboard.writeText(shareUrl);
         }}
       />
       <Button

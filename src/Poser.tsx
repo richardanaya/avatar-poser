@@ -126,6 +126,7 @@ export const Poser = ({ url }: PoserProps) => {
             <Hud renderPriority={fancy ? 4 : 1}>
               <OrthographicCamera makeDefault position={[0, 0, 100]} />
               <PoserHud
+                url={url}
                 width={editorWidth}
                 height={Math.max(editorHeight, 200)}
                 position={[0, offsetY, 0]}
@@ -166,6 +167,7 @@ export const Poser = ({ url }: PoserProps) => {
         {isPresenting && (
           <>
             <PoserHud
+              url={url}
               width={1200}
               height={250}
               position={[0, 1.2, 0.5]}
