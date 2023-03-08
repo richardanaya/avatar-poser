@@ -1,19 +1,12 @@
-import {
-  GroupProps,
-  Object3DProps,
-  PrimitiveProps,
-  Props,
-  ReactThreeFiber,
-  ThreeEvent,
-} from "@react-three/fiber";
-import { useEffect, useState } from "react";
+import { GroupProps, ReactThreeFiber, ThreeEvent } from "@react-three/fiber";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PoseAnimation } from "./Poser";
 import { Box, RoundedBox, Text } from "@react-three/drei";
 import { allBones } from "./allBones";
-import { Vector3 } from "three";
-import { chartruse, eigengrau, eigenlumin, eigenmid } from "./colors";
+import { Mesh, Vector3 } from "three";
+import { chartruse, eigenlumin, eigenmid } from "./colors";
 import { EventHandlers } from "@react-three/fiber/dist/declarations/src/core/events";
-import { Interactive } from "@react-three/xr";
+import { Interactive, XRInteractionHandler } from "@react-three/xr";
 
 const hasAddedBone = localStorage.getItem("hasAddedBone") === "true";
 
@@ -43,7 +36,7 @@ const Typography = ({
       {...props}
       color={eigenlumin}
       fontSize={size || 1}
-      scale={[10, 10, 10]}
+      scale={[10, 10, 0.0001]}
       anchorX={align || "center"}
       anchorY="middle"
     >
@@ -95,34 +88,98 @@ const NumericSliderInput = ({
       onChange(value);
     }
   };
+  let sliderRef = useRef<Mesh>(null);
+
+  const onSelectStart: XRInteractionHandler = useCallback(
+    (e) => {
+      if (sliderRef.current) {
+        const intersection = e.intersections[0];
+        const localVector = intersection.point;
+        const worldVector = e.target.localToWorld(localVector);
+        const sliderVector = sliderRef.current.worldToLocal(worldVector);
+        setIsDragging(true);
+        setDragStartX(sliderVector.x);
+        setDragStartValue(value);
+        setDidMove(false);
+      }
+    },
+    [sliderRef]
+  );
+
+  const onSelectMove: XRInteractionHandler = useCallback(
+    (e) => {
+      if (!sliderRef.current) return;
+      const intersection = e.intersections[0];
+      const localVector = intersection.point;
+      const worldVector = e.target.localToWorld(localVector);
+      const sliderVector = sliderRef.current.worldToLocal(worldVector);
+      if (isDragging) {
+        const delta = sliderVector.x - dragStartX;
+        const newValue = dragStartValue + (delta / width) * (max - min);
+        onChange(newValue);
+        setDidMove(true);
+      }
+    },
+    [sliderRef, dragStartX, isDragging]
+  );
+
+  const onSelectEnd: XRInteractionHandler = (e) => {
+    setIsDragging(false);
+    if (!didMove) {
+      onChange(value);
+    }
+  };
+
+  const [hovered, setHovered] = useState(false);
+
+  const onHover: XRInteractionHandler = (e) => {
+    setHovered(true);
+  };
+
+  const onBlur: XRInteractionHandler = (e) => {
+    setHovered(false);
+  };
 
   return (
     <group {...groupProps}>
-      <mesh
-        position={[width / 2, 0, -0.01]}
-        onPointerMove={handleMouseMove}
-        onPointerUp={handleMouseUp}
-      >
-        <planeGeometry args={[width, 12]} />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
+      <Interactive onMove={onSelectMove} onSelectEnd={onSelectEnd}>
+        <mesh
+          position={[width / 2, 0, -0.01]}
+          onPointerMove={handleMouseMove}
+          onPointerUp={handleMouseUp}
+          ref={sliderRef}
+        >
+          <planeGeometry args={[width, 12]} />
+          <meshBasicMaterial transparent opacity={0} />
+        </mesh>
+      </Interactive>
       <mesh position={[width / 2, 0, -0.01]}>
         <planeGeometry args={[width, 4]} />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
-      <mesh
-        position={[(value / (max - min)) * width, 0, 0]}
-        onPointerDown={handleMouseDown}
-        onPointerOver={() => {
-          document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={() => {
-          document.body.style.cursor = "auto";
-        }}
+      <Interactive
+        onSelectStart={onSelectStart}
+        onHover={onHover}
+        onBlur={onBlur}
       >
-        <circleGeometry args={[5, 7]} />
-        <meshBasicMaterial color={eigenlumin} />
-      </mesh>
+        <mesh
+          position={[(value / (max - min)) * width, 0, 0]}
+          onPointerDown={handleMouseDown}
+          onPointerOver={() => {
+            setHovered(true);
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            setHovered(false);
+            document.body.style.cursor = "auto";
+          }}
+        >
+          <planeGeometry args={[5, 7]} />
+          <meshBasicMaterial
+            color={isDragging || hovered ? chartruse : eigenlumin}
+          />
+        </mesh>
+      </Interactive>
     </group>
   );
 };
@@ -268,65 +325,127 @@ const Timeline = ({
     setIsDragging(false);
   };
 
+  let sliderRef = useRef<Mesh>(null);
+
+  const onSelectStart: XRInteractionHandler = useCallback(
+    (e) => {
+      debugger;
+      if (sliderRef.current) {
+        const intersection = e.intersections[0];
+        const localVector = intersection.point;
+        const worldVector = e.target.localToWorld(localVector);
+        const sliderVector = sliderRef.current.worldToLocal(worldVector);
+        setIsDragging(true);
+        setDragStartX(sliderVector.x);
+        setDragStartCurrentTime(currentTime);
+        onInteractingChanged?.(true);
+      }
+    },
+    [sliderRef]
+  );
+
+  const onSelectMove: XRInteractionHandler = useCallback(
+    (e) => {
+      if (!sliderRef.current) return;
+      const intersection = e.intersections[0];
+      const localVector = intersection.point;
+      const worldVector = e.target.localToWorld(localVector);
+      const sliderVector = sliderRef.current.worldToLocal(worldVector);
+      if (isDragging) {
+        const delta = sliderVector.x - dragStartX;
+        const newTime =
+          dragStartCurrentTime + (delta / width) * animation.length;
+        onTimeChange(Math.max(0, Math.min(animation.length, newTime)));
+      }
+    },
+    [sliderRef, dragStartX, isDragging]
+  );
+
+  const onSelectEnd: XRInteractionHandler = (e) => {
+    setIsDragging(false);
+  };
+
+  const [hovered, setHovered] = useState(false);
+
   return (
-    <group
-      {...groupProps}
-      onPointerDown={handleMouseDown}
-      onPointerMove={handleMouseMove}
-      onPointerUp={handleMouseUp}
-    >
-      <mesh position={[0, 0, 0]} scale={[width, 30, 1]}>
-        <planeGeometry />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
-      <mesh position={[0, 0, 0]} scale={[width, 10, 0]}>
+    <group {...groupProps}>
+      <Interactive onMove={onSelectMove} onSelectEnd={onSelectEnd}>
+        <mesh
+          position={[0, 0, 0]}
+          scale={[width, 30, 0.0001]}
+          onPointerMove={handleMouseMove}
+          onPointerUp={handleMouseUp}
+        >
+          <planeGeometry />
+          <meshBasicMaterial transparent opacity={0} />
+        </mesh>
+      </Interactive>
+      <mesh position={[0, 0, 0]} scale={[width, 10, 0.0001]} ref={sliderRef}>
         <planeGeometry />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
-      <mesh
-        position={[
-          (currentTime / animation.length) * width - width / 2,
-          0,
-          0.011,
-        ]}
-        scale={[5, 5, 0]}
-        onPointerOver={() => {
-          document.body.style.cursor = "pointer";
+      <Interactive
+        onSelectStart={onSelectStart}
+        onHover={() => {
+          setHovered(true);
         }}
-        onPointerOut={() => {
-          document.body.style.cursor = "auto";
+        onBlur={() => {
+          setHovered(false);
         }}
       >
-        <circleGeometry />
-        <meshBasicMaterial color={chartruse} />
-      </mesh>
+        <mesh
+          onPointerDown={handleMouseDown}
+          position={[
+            (currentTime / animation.length) * width - width / 2,
+            0,
+            0.011,
+          ]}
+          scale={[5, 5, 0.001]}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "auto";
+          }}
+        >
+          <circleGeometry />
+          <meshBasicMaterial color={hovered ? "red" : chartruse} />
+        </mesh>
+      </Interactive>
       {animation.length > 0 &&
         animation.keyframes.map(({ time }, i) => {
           return (
-            <mesh
-              key={i}
-              position={[
-                (time / animation.length) * width - width / 2,
-                0,
-                0.01,
-              ]}
-              scale={[10, 10, 0]}
-              onPointerDown={(_) => {
+            <Interactive
+              onSelectEnd={(_) => {
                 onSelectKeyFrame(i);
                 <meshBasicMaterial color={eigenmid} />;
               }}
-              onPointerOver={() => {
-                document.body.style.cursor = "pointer";
-              }}
-              onPointerOut={() => {
-                document.body.style.cursor = "auto";
-              }}
             >
-              <circleGeometry />
-              <meshBasicMaterial
-                color={currentSelectedKeyFrame === i ? eigenlumin : eigenmid}
-              />
-            </mesh>
+              <mesh
+                key={i}
+                position={[
+                  (time / animation.length) * width - width / 2,
+                  0,
+                  0.01,
+                ]}
+                scale={[10, 10, 0.001]}
+                onPointerDown={(_) => {
+                  onSelectKeyFrame(i);
+                  <meshBasicMaterial color={eigenmid} />;
+                }}
+                onPointerOver={() => {
+                  document.body.style.cursor = "pointer";
+                }}
+                onPointerOut={() => {
+                  document.body.style.cursor = "auto";
+                }}
+              >
+                <circleGeometry />
+                <meshBasicMaterial
+                  color={currentSelectedKeyFrame === i ? eigenlumin : eigenmid}
+                />
+              </mesh>
+            </Interactive>
           );
         })}
     </group>
@@ -353,7 +472,13 @@ export function PoserHud({
     keyframes: [
       {
         time: 0,
-        pose: {},
+        pose: {
+          Neck: {
+            x: 0,
+            y: 0,
+            z: 0,
+          },
+        },
       },
     ],
   });
