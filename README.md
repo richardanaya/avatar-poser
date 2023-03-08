@@ -110,4 +110,4 @@ mouthSmile [-1 to 1]
 * Want to sling some code like a cyberspace cowboy?  
 * Want to help document for the good of humanity?
 
-Feel free to create an issue.
+Feel free to create an issue or pull request.
