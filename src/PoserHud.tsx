@@ -122,28 +122,16 @@ const NumericSliderInput = ({
     setIsDragging(false);
   };
 
-  const [hovered, setHovered] = useState(false);
-
-  const onHover: XRInteractionHandler = (e) => {
-    setHovered(true);
-  };
-
-  const onBlur: XRInteractionHandler = (e) => {
-    setHovered(false);
-  };
-
   return (
     <group {...groupProps}>
       <Interactive
-        onMove={onSelectMove}
-        onSelectEnd={onSelectEnd}
-        onBlur={onSelectEnd}
+        onMove={isDragging ? onSelectMove : undefined}
+        onSelectEnd={isDragging ? onSelectEnd : undefined}
       >
         <mesh
           position={[0, 0, -0.01]}
-          onPointerMove={handleMouseMove}
-          onPointerUp={handleMouseUp}
-          onPointerLeave={handleMouseUp}
+          onPointerMove={isDragging ? handleMouseMove : undefined}
+          onPointerUp={isDragging ? handleMouseUp : undefined}
           ref={sliderRef}
         >
           <planeGeometry
@@ -156,27 +144,27 @@ const NumericSliderInput = ({
         <planeGeometry args={[width, 4]} />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
-      <Interactive
-        onSelectStart={onSelectStart}
-        onHover={onHover}
-        onBlur={onBlur}
-      >
+      <Interactive onSelectStart={isDragging ? undefined : onSelectStart}>
         <mesh
           position={[(value / (max - min)) * width, 0, 0]}
-          onPointerDown={handleMouseDown}
-          onPointerOver={() => {
-            setHovered(true);
-            document.body.style.cursor = "pointer";
-          }}
-          onPointerOut={() => {
-            setHovered(false);
-            document.body.style.cursor = "auto";
-          }}
+          onPointerDown={isDragging ? undefined : handleMouseDown}
+          onPointerOver={
+            isDragging
+              ? undefined
+              : () => {
+                  document.body.style.cursor = "pointer";
+                }
+          }
+          onPointerOut={
+            isDragging
+              ? undefined
+              : () => {
+                  document.body.style.cursor = "auto";
+                }
+          }
         >
           <circleGeometry args={large ? [15, 15] : [7, 7]} />
-          <meshBasicMaterial
-            color={isDragging || hovered ? chartruse : eigenlumin}
-          />
+          <meshBasicMaterial color={eigenlumin} />
         </mesh>
       </Interactive>
     </group>
@@ -626,7 +614,7 @@ export function PoserHud({
       <Typography
         align="left"
         size={1.5}
-        position={[-width / 2 + PADDING, height / 2 - PADDING, 0]}
+        position={[-width / 2 + PADDING, height / 2 - 2 * PADDING, 0]}
       >
         Time: {currentTime.toFixed(2)}/{animation.length.toFixed(2)} seconds{" "}
         {helperMessage.length > 0 ? `- ${helperMessage}` : ""}
