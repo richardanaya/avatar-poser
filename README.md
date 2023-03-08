@@ -96,8 +96,8 @@ mouthSmile [0 to 1]
 
 #### Contribute
 
-Have a cool avatar you want in our random selection? 
-Want to sling some code like a cyberspace cowboy?  
-Want to help document for the good of humanity?
+* Have a cool avatar you want in our random selection? 
+* Want to sling some code like a cyberspace cowboy?  
+* Want to help document for the good of humanity?
 
 Feel free to create an issue.
