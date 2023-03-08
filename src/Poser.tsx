@@ -59,6 +59,9 @@ export const Poser = ({ url, onInteractingChanged }: PoserProps) => {
                 }} onPointerUp={_ => {
                     onInteractingChanged?.(false);
                 }}
+                onInteractingChanged={_ => {
+                    onInteractingChanged?.(_);
+                }}
             />
             <ambientLight intensity={1} />
             <pointLight position={[200, 200, 100]} intensity={0.5} />

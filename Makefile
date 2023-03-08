@@ -1,3 +1,4 @@
 build:
 	yarn build
-	yarn types
+	rm -rf docs
+	mv dist docs
