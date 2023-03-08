@@ -2,9 +2,16 @@
 <p align="center">ＡＶＡＴＡＲ　ＰＯＳＥＲ</p>
 
 
-A website for posing avatars in desktop and VR.
+<p align="center">A website for posing avatars in desktop and VR.
 
-`https://avatarposer.com/?model=<url>`
+
+#### Play
+
+Go to the [website](avatarposer.com) and play with random avatars.
+
+#### How to use
+
+`https://avatarposer.com/?model=<url>`</p>
 
 #### Compatible Avatars
 
