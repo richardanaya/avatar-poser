@@ -144,6 +144,7 @@ const NumericSliderInput = ({
         <planeGeometry args={[width, 4]} />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
+      <Typography position={[-width / 2 - PADDING, 0, 0]}>{name}</Typography>
       <Interactive onSelectStart={isDragging ? undefined : onSelectStart}>
         <mesh
           position={[(value / (max - min)) * width, 0, 0]}
@@ -405,7 +406,7 @@ const Timeline = ({
             0,
             0.02,
           ]}
-          scale={[10, 30, 0.001]}
+          scale={[5, 5, 0.001]}
           onPointerOver={() => {
             document.body.style.cursor = "pointer";
           }}
@@ -413,8 +414,8 @@ const Timeline = ({
             document.body.style.cursor = "auto";
           }}
         >
-          <planeGeometry />
-          <meshBasicMaterial color={hovered ? "red" : chartruse} />
+          <circleGeometry />
+          <meshBasicMaterial color={chartruse} />
         </mesh>
       </Interactive>
       {animation.length > 0 &&
@@ -618,7 +619,6 @@ export function PoserHud({
       </mesh>
       <Typography
         align="left"
-        size={1.5}
         position={[-width / 2 + PADDING, height / 2 - 2 * PADDING, 0]}
       >
         Time: {currentTime.toFixed(2)}/{animation.length.toFixed(2)} seconds{" "}
