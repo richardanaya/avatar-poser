@@ -31,7 +31,7 @@ const Typography = ({
   ...props
 }: {
   children: React.ReactNode;
-  size?: 1 | 1.5;
+  size?: 1 | 1.5 | 3;
   align?: "left" | "center" | "right";
   position?: ReactThreeFiber.Vector3;
 } & EventHandlers) => {
@@ -558,8 +558,8 @@ export function PoserHud({
             }}
           />
           {Object.keys(currentKeyFrame.pose).length === 0 ? (
-            <Typography position={[0, 0, 0]}>
-              No bones being animated in this keyframe.
+            <Typography position={[0, 0, 0]} size={1.5}>
+              No bones are currently being animated in this keyframe.
             </Typography>
           ) : (
             Object.entries(currentKeyFrame.pose).map(([boneName, bone], i) => {
@@ -581,8 +581,8 @@ export function PoserHud({
                   position={position}
                   width={widthOfManipulators / colsPerRow}
                   value={[bone.x, bone.y, bone.z]}
-                  min={-2 * Math.PI}
-                  max={2 * Math.PI}
+                  min={-Math.PI}
+                  max={Math.PI}
                   onChange={(_) => {
                     setAnimation((animation) => {
                       const newAnimation = {
