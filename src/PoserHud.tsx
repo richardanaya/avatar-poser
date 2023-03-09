@@ -299,7 +299,7 @@ function RoundedRectOutline({
   const shape = new Shape();
   const halfWidth = width / 2;
   const halfHeight = height / 2;
-  const quarterRadius = radius / 4;
+  const quarterRadius = radius;
 
   shape.moveTo(-halfWidth + quarterRadius, -halfHeight);
   shape.lineTo(halfWidth - quarterRadius, -halfHeight);
