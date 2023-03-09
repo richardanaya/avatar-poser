@@ -109,5 +109,6 @@ mouthSmile [-1 to 1]
 * Have a cool avatar you want in our random selection? 
 * Want to sling some code like a cyberspace cowboy?  
 * Want to help document for the good of humanity?
+* Want to help me translate this app into other languages?
 
 Feel free to create an issue or pull request.
