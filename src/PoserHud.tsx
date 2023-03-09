@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PoseAnimation, usePoserStore } from "./Poser";
 import { Box, Plane, RoundedBox, Text } from "@react-three/drei";
 import { allBones, bonesByCategory } from "./allBones";
-import { Mesh, Vector3 } from "three";
+import { Mesh, Shape, Vector3 } from "three";
 import { chartruse, eigenlumin, eigenmid } from "./colors";
 import { EventHandlers } from "@react-three/fiber/dist/declarations/src/core/events";
 import { Interactive, useXR, XRInteractionHandler } from "@react-three/xr";
@@ -25,17 +25,19 @@ const Typography = ({
   children,
   size,
   align,
+  color,
   ...props
 }: {
   children: React.ReactNode;
   size?: 1 | 1.5 | 3;
   align?: "left" | "center" | "right";
+  color?: string;
   position?: ReactThreeFiber.Vector3;
 } & EventHandlers) => {
   return (
     <Text
       {...props}
-      color={eigenlumin}
+      color={color || eigenlumin}
       fontSize={size || 1}
       scale={[10, 10, 0.0001]}
       anchorX={align || "center"}
@@ -144,7 +146,11 @@ const NumericSliderInput = ({
         <planeGeometry args={[width, 4]} />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
-      <Typography position={[-width / 2 - PADDING, 0, 0]} align="right">
+      <Typography
+        position={[-width / 2 - PADDING, 0, 0]}
+        align="right"
+        color={eigenmid}
+      >
         {name}
       </Typography>
       <Interactive onSelectStart={isDragging ? undefined : onSelectStart}>
@@ -277,6 +283,96 @@ const Vector1Input = ({
   );
 };
 
+function RoundedRectOutline({
+  width,
+  height,
+  radius,
+  lineWidth,
+  color,
+}: {
+  width: number;
+  height: number;
+  radius: number;
+  lineWidth: number;
+  color?: string;
+}) {
+  const shape = new Shape();
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+  const quarterRadius = radius / 4;
+
+  shape.moveTo(-halfWidth + quarterRadius, -halfHeight);
+  shape.lineTo(halfWidth - quarterRadius, -halfHeight);
+  shape.quadraticCurveTo(
+    halfWidth,
+    -halfHeight,
+    halfWidth,
+    -halfHeight + quarterRadius
+  );
+  shape.lineTo(halfWidth, halfHeight - quarterRadius);
+  shape.quadraticCurveTo(
+    halfWidth,
+    halfHeight,
+    halfWidth - quarterRadius,
+    halfHeight
+  );
+  shape.lineTo(-halfWidth + quarterRadius, halfHeight);
+  shape.quadraticCurveTo(
+    -halfWidth,
+    halfHeight,
+    -halfWidth,
+    halfHeight - quarterRadius
+  );
+  shape.lineTo(-halfWidth, -halfHeight + quarterRadius);
+  shape.quadraticCurveTo(
+    -halfWidth,
+    -halfHeight,
+    -halfWidth + quarterRadius,
+    -halfHeight
+  );
+
+  // make it hollow based on radius and line width
+  shape.holes.push(
+    new Shape()
+      .moveTo(-halfWidth + radius, -halfHeight + lineWidth)
+      .lineTo(halfWidth - radius, -halfHeight + lineWidth)
+      .quadraticCurveTo(
+        halfWidth - lineWidth,
+        -halfHeight + lineWidth,
+        halfWidth - lineWidth,
+        -halfHeight + radius
+      ) // top right
+      .lineTo(halfWidth - lineWidth, halfHeight - radius)
+      .quadraticCurveTo(
+        halfWidth - lineWidth,
+        halfHeight - lineWidth,
+        halfWidth - radius,
+        halfHeight - lineWidth
+      ) // bottom right
+      .lineTo(-halfWidth + radius, halfHeight - lineWidth)
+      .quadraticCurveTo(
+        -halfWidth + lineWidth,
+        halfHeight - lineWidth,
+        -halfWidth + lineWidth,
+        halfHeight - radius
+      ) // bottom left
+      .lineTo(-halfWidth + lineWidth, -halfHeight + radius)
+      .quadraticCurveTo(
+        -halfWidth + lineWidth,
+        -halfHeight + lineWidth,
+        -halfWidth + radius,
+        -halfHeight + lineWidth
+      ) // top left
+  );
+
+  return (
+    <mesh>
+      <shapeGeometry args={[shape]} />
+      <lineBasicMaterial color={color || eigenlumin} linewidth={lineWidth} />
+    </mesh>
+  );
+}
+
 const Button = ({
   text,
   width,
@@ -315,15 +411,29 @@ const Button = ({
         }}
         onPointerOver={() => {
           document.body.style.cursor = "pointer";
+          setHovered(true);
         }}
         onPointerOut={() => {
           document.body.style.cursor = "auto";
+          setHovered(false);
         }}
       >
+        <RoundedRectOutline
+          color={hovered ? eigenlumin : eigenmid}
+          width={width}
+          height={23}
+          radius={4}
+          lineWidth={1}
+        ></RoundedRectOutline>
         <Box args={[width, 23, 0]}>
-          <meshBasicMaterial color={hovered ? "#444" : "#333"} />
+          <meshBasicMaterial transparent opacity={0} />
         </Box>
-        <Typography position={[0, 0, 1]}>{text}</Typography>
+        <Typography
+          position={[0, 0, 1]}
+          color={hovered ? eigenlumin : eigenmid}
+        >
+          {text}
+        </Typography>
       </group>
     </Interactive>
   );
@@ -712,6 +822,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
       <Typography
         align="left"
         position={[-width / 2 + PADDING, height / 2 - 2 * PADDING, 0]}
+        color={eigenmid}
       >
         Time: {currentTime.toFixed(2)}/{animation.length.toFixed(2)} seconds{" "}
         {helperMessage.length > 0 ? `- ${helperMessage}` : ""}
@@ -737,7 +848,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
       />
       <Button
         width={100}
-        text="Share URL to Cipboard"
+        text="Share URL Cipboard"
         position={[
           width / 2 + PADDING - 180,
           -height / 2 + PADDING + 45 + 25,
