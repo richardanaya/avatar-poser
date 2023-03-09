@@ -192,10 +192,14 @@ const Vector3Input = ({
   max: number;
   onChange: (value: [number, number, number]) => void;
 } & GroupProps) => {
-  const ratio = large ? 5 / 6 : 2 / 3;
+  const ratio = 0.9;
   return (
     <group {...groupProps}>
-      <Typography position={[10, 0, 0]} size={large ? 1.5 : 1} align="left">
+      <Typography
+        position={[(width * (1 - ratio)) / 2, 16, 0]}
+        size={large ? 1.5 : 1}
+        align="left"
+      >
         {name}
       </Typography>
       <NumericSliderInput
@@ -206,11 +210,7 @@ const Vector3Input = ({
         max={max}
         large={large}
         onChange={(_) => onChange([_, value[1], value[2]])}
-        position={[
-          width * (1 - ratio) + (width * ratio) / 2,
-          large ? 30 : 14,
-          0,
-        ]}
+        position={[width / 2, 0, 0]}
       />
       <NumericSliderInput
         name="y"
@@ -220,7 +220,7 @@ const Vector3Input = ({
         max={max}
         large={large}
         onChange={(_) => onChange([value[0], _, value[2]])}
-        position={[width * (1 - ratio) + (width * ratio) / 2, 0, 0]}
+        position={[width / 2, large ? -30 : -14, 0]}
       />
       <NumericSliderInput
         name="z"
@@ -230,11 +230,7 @@ const Vector3Input = ({
         max={max}
         large={large}
         onChange={(_) => onChange([value[0], value[1], _])}
-        position={[
-          width * (1 - ratio) + (width * ratio) / 2,
-          large ? -30 : -14,
-          0,
-        ]}
+        position={[width / 2, large ? -60 : -28, 0]}
       />
     </group>
   );
@@ -258,21 +254,24 @@ const Vector1Input = ({
   max: number;
   onChange: (value: [number, number, number]) => void;
 } & GroupProps) => {
-  const ratio = large ? 5 / 6 : 2 / 3;
   return (
     <group {...groupProps}>
-      <Typography position={[10, 0, 0]} size={large ? 1.5 : 1} align="left">
+      <Typography
+        position={[(width * (1 - 0.9)) / 2, 16, 0]}
+        size={large ? 1.5 : 1}
+        align="left"
+      >
         {name}
       </Typography>
       <NumericSliderInput
         name=""
         value={value[0]}
-        width={width * ratio}
+        width={width * 0.9}
         min={min}
         max={max}
         large={large}
         onChange={(_) => onChange([_, value[1], value[2]])}
-        position={[width * (1 - ratio) + (width * ratio) / 2, 0, 0]}
+        position={[width / 2, 0, 0]}
       />
     </group>
   );
@@ -682,7 +681,11 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
       <Button
         width={100}
         text="Share URL to Cipboard"
-        position={[width / 2 + PADDING - 180, -height / 2 + PADDING + 45, 0]}
+        position={[
+          width / 2 + PADDING - 180,
+          -height / 2 + PADDING + 45 + 25,
+          0,
+        ]}
         onClick={() => {
           const animationAsBase64 = btoa(JSON.stringify(animation));
           const shareUrl = `${window.location.origin}/?model=${url}&autoplay=true&animation=${animationAsBase64}`;
@@ -692,7 +695,11 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
       <Button
         width={100}
         text="Download Animation"
-        position={[width / 2 + PADDING - 70, -height / 2 + PADDING + 45, 0]}
+        position={[
+          width / 2 + PADDING - 70,
+          -height / 2 + PADDING + 45 + 25,
+          0,
+        ]}
         onClick={() => {
           const element = document.createElement("a");
           const file = new Blob([JSON.stringify(animation)], {
@@ -708,7 +715,11 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
       <Button
         width={100}
         text="About/Help"
-        position={[width / 2 + PADDING - 180, -height / 2 + PADDING + 10, 0]}
+        position={[
+          width / 2 + PADDING - 180,
+          -height / 2 + PADDING + 10 + 25,
+          0,
+        ]}
         onClick={() => {
           let w = window.open("_blank");
           if (w) w.location = "https://github.com/richardanaya/avatar-poser/";
@@ -718,7 +729,11 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
       <Button
         width={100}
         text="Minimize"
-        position={[width / 2 + PADDING - 70, -height / 2 + PADDING + 10, 0]}
+        position={[
+          width / 2 + PADDING - 70,
+          -height / 2 + PADDING + 10 + 25,
+          0,
+        ]}
         onClick={() => {
           setMinimized(true);
         }}
@@ -729,7 +744,11 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
         text={
           animation.keyframes.length == 0 ? "Add Keyframe" : "Copy Keyframe"
         }
-        position={[width / 2 + PADDING - 180, -height / 2 + PADDING + 80, 0]}
+        position={[
+          width / 2 + PADDING - 180,
+          -height / 2 + PADDING + 80 + 25,
+          0,
+        ]}
         onClick={() => {
           const newKeyFrame = JSON.parse(
             JSON.stringify(
@@ -755,7 +774,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
             text="Add Bone"
             position={[
               width / 2 + PADDING - 180,
-              -height / 2 + PADDING + 115,
+              -height / 2 + PADDING + 115 + 25,
               0,
             ]}
             onClick={() => {
@@ -767,7 +786,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
             text="Delete Bone"
             position={[
               width / 2 + PADDING - 70,
-              -height / 2 + PADDING + 115,
+              -height / 2 + PADDING + 115 + 25,
               0,
             ]}
             onClick={() => {}}
@@ -775,7 +794,11 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
           <Button
             width={100}
             text="Delete Keyframe"
-            position={[width / 2 + PADDING - 70, -height / 2 + PADDING + 80, 0]}
+            position={[
+              width / 2 + PADDING - 70,
+              -height / 2 + PADDING + 80 + 25,
+              0,
+            ]}
             onClick={() => {
               setAnimation({
                 ...animation,
@@ -811,8 +834,8 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
                 -width / 2 + (widthOfManipulators / colsPerRow) * col + 30,
                 height / 2 -
                   30 -
-                  row * (isPresenting ? 100 : 50) -
-                  (isPresenting ? 100 : 60),
+                  row * (isPresenting ? 120 : 70) -
+                  (isPresenting ? 120 : 80),
                 0
               );
               return isRotation ? (
