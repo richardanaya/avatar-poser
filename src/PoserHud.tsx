@@ -2,7 +2,7 @@ import { GroupProps, ReactThreeFiber, ThreeEvent } from "@react-three/fiber";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PoseAnimation, usePoserStore } from "./Poser";
 import { Box, Plane, RoundedBox, Text } from "@react-three/drei";
-import { allBones } from "./allBones";
+import { allBones, bonesByCategory } from "./allBones";
 import { Mesh, Vector3 } from "three";
 import { chartruse, eigenlumin, eigenmid } from "./colors";
 import { EventHandlers } from "@react-three/fiber/dist/declarations/src/core/events";
@@ -510,6 +510,8 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
   const [currentSelectedKeyFrame, setCurrentSelectedKeyFrame] = useState<
     number | null
   >(0);
+  const [showBoneCategories, setShowBoneCategories] = useState(false);
+  const [boneCategory, setBoneCategory] = useState<string | null>(null);
   const [showBoneNames, setShowBoneNames] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [playIntervalHandle, setPlayIntervalHandle] = useState<number | null>(
@@ -572,14 +574,9 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
     );
   }
 
-  if (showBoneNames) {
-    const allKnownBoneNames = [...allBones.sort()];
-    const currentBoneNames = currentKeyFrame
-      ? Object.keys(currentKeyFrame.pose)
-      : [];
-    const remainingBones = allKnownBoneNames.filter(
-      (boneName) => !currentBoneNames.includes(boneName)
-    );
+  if (showBoneCategories) {
+    const allBoneCategories = Object.keys(bonesByCategory);
+    allBoneCategories.push("Cancel");
 
     return (
       <group {...groupProps}>
@@ -587,23 +584,82 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
           <boxGeometry args={[width, height]} />
           <meshBasicMaterial color="black" transparent opacity={0.3} />
         </mesh>
+        {allBoneCategories.map((category, i) => {
+          const colsPerRow = 6;
+          const row = Math.floor(i / colsPerRow);
+          const col = i % colsPerRow;
+          return (
+            <Button
+              key={category}
+              position={[
+                PADDING +
+                  -width / 2 +
+                  (width / colsPerRow - PADDING) * col +
+                  width / colsPerRow / 2,
+                -PADDING + height / 2 - 10 - row * (20 + PADDING),
+                0,
+              ]}
+              text={category}
+              width={width / colsPerRow - PADDING * 2}
+              onClick={() => {
+                if (category === "Cancel") {
+                  setShowBoneCategories(false);
+                  return;
+                }
+                setBoneCategory(category);
+                setShowBoneCategories(false);
+                setShowBoneNames(true);
+              }}
+            />
+          );
+        })}
+      </group>
+    );
+  }
+
+  if (showBoneNames) {
+    const allKnownBoneNames: string[] = // @ts-ignore
+      boneCategory === null ? [] : bonesByCategory[boneCategory].sort();
+    const currentBoneNames = currentKeyFrame
+      ? Object.keys(currentKeyFrame.pose)
+      : [];
+    const remainingBones = allKnownBoneNames.filter(
+      (boneName) => !currentBoneNames.includes(boneName)
+    );
+    remainingBones.push("Cancel");
+
+    return (
+      <group {...groupProps}>
+        {remainingBones.length === 1 && (
+          <Typography>No more bones in this category to add</Typography>
+        )}
+        <mesh position={[0, 0, -1]}>
+          <boxGeometry args={[width, height]} />
+          <meshBasicMaterial color="black" transparent opacity={0.3} />
+        </mesh>
         {remainingBones.map((boneName, i) => {
-          const colsPerRow = 7;
+          const colsPerRow = 6;
           const row = Math.floor(i / colsPerRow);
           const col = i % colsPerRow;
           return (
             <Button
               key={boneName}
               position={[
-                -width / 2 +
-                  (width / colsPerRow) * col +
+                PADDING +
+                  -width / 2 +
+                  (width / colsPerRow - PADDING) * col +
                   width / colsPerRow / 2,
-                height / 2 - 10 - row * 20,
+                -PADDING + height / 2 - 10 - row * (20 + PADDING),
                 0,
               ]}
+              width={width / colsPerRow - PADDING * 2}
               text={boneName}
-              width={width / colsPerRow}
               onClick={() => {
+                if (boneName === "Cancel") {
+                  setShowBoneNames(false);
+                  setBoneCategory(null);
+                  return;
+                }
                 localStorage.setItem("hasAddedBone", "true");
                 setAnimation({
                   ...animation,
@@ -626,6 +682,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
                     };
                   }),
                 });
+                setBoneCategory(null);
                 setShowBoneNames(false);
                 setHelperMessage(
                   `You added ${boneName}! You can now adjust the sliders of it's x y z values.`
@@ -778,7 +835,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
               0,
             ]}
             onClick={() => {
-              setShowBoneNames(true);
+              setShowBoneCategories(true);
             }}
           />
           <Button
