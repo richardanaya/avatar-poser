@@ -15,8 +15,10 @@ const App = () => {
     () =>
       modelUrl
         ? modelUrl
-        : Math.random() < 0.5
+        : Math.random() < 0.33
         ? "https://models.readyplayer.me/640765d93e6d860c1d738326.glb"
+        : Math.random() < 0.66
+        ? "https://models.readyplayer.me/640b8637041467e2046771c1.glb"
         : "https://models.readyplayer.me/6407fbec0ed60d89a2c64367.glb",
     []
   );
