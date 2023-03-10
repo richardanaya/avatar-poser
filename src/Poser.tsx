@@ -1,4 +1,4 @@
-import { Avatar, AvatarPose } from "react-three-avatar";
+import { Avatar, AvatarPose, SimpleEuler } from "react-three-avatar";
 import { Hud, OrbitControls, OrthographicCamera } from "@react-three/drei";
 import { useEffect, useState } from "react";
 import { useWindowSize } from "@react-hook/window-size";
@@ -13,12 +13,14 @@ import {
 } from "@react-three/postprocessing";
 import create from "zustand";
 
+export type PoseKeyframe = {
+  time: number;
+  pose: AvatarPose;
+};
+
 export type PoseAnimation = {
   length: number;
-  keyframes: {
-    time: number;
-    pose: AvatarPose;
-  }[];
+  keyframes: PoseKeyframe[];
 };
 
 export type PoserProps = {
@@ -79,61 +81,83 @@ export const Poser = ({ url }: PoserProps) => {
     if (animation) {
       const { keyframes } = animation;
 
-      const newPose = {};
-      for (let i = 0; i < keyframes.length; i++) {
-        const { time, pose } = keyframes[i];
-        if (time > currentTime) {
-          break;
+      const newPose: AvatarPose = {};
+
+      const allBoneNamesOfAllKeyframes: Set<keyof AvatarPose> = new Set();
+      keyframes.forEach((keyframe) => {
+        Object.keys(keyframe.pose).forEach((boneName) => {
+          allBoneNamesOfAllKeyframes.add(boneName as keyof AvatarPose);
+        });
+      });
+
+      allBoneNamesOfAllKeyframes.forEach((boneName) => {
+        // sort from earliest to latest
+        const boneKeyframes = keyframes
+          .filter((keyframe) => keyframe.pose[boneName] !== undefined)
+          .sort((a, b) => a.time - b.time);
+
+        if (boneKeyframes.length === 0) {
+          return;
         }
-        Object.assign(newPose, pose);
-      }
 
-      const nextKeyframe = keyframes.find((_) => _.time > currentTime);
-      if (nextKeyframe) {
-        const { time: nextTime, pose: nextPose } = nextKeyframe;
-        // get the last most recent
-        const mostRecentKeyframe = keyframes
-          .filter((_) => _.time < currentTime)
-          .sort((a, b) => a.time - b.time)
-          .pop();
-
-        if (mostRecentKeyframe) {
-          const { time: mostRecentTime, pose } = mostRecentKeyframe;
-          const timeDiff = nextTime - mostRecentTime;
-          const timeSince = currentTime - mostRecentTime;
-          const timeRatio = timeSince / timeDiff;
-          for (const key in pose) {
-            // @ts-ignore
-            const value = pose[key] as
-              | number
-              | undefined
-              | { x: number; y: number; z: number };
-            if (value) {
-              // @ts-ignore
-              const nextValue = nextPose[key] as
-                | number
-                | undefined
-                | { x: number; y: number; z: number };
-              if (nextValue) {
-                if (typeof value === "number") {
-                  // @ts-ignore
-                  newPose[key] = value + (nextValue - value) * timeRatio;
-                } else {
-                  if (typeof nextValue === "number") {
-                  } else {
-                    // @ts-ignore
-                    newPose[key] = {
-                      x: value.x + (nextValue.x - value.x) * timeRatio,
-                      y: value.y + (nextValue.y - value.y) * timeRatio,
-                      z: value.z + (nextValue.z - value.z) * timeRatio,
-                    };
-                  }
-                }
-              }
-            }
+        const lastFrameWithBoneBeforeCurrentTime = boneKeyframes.reduce<
+          PoseKeyframe | undefined
+        >((prev, curr) => {
+          if (curr.time <= currentTime) {
+            return curr;
           }
+          return prev;
+        }, undefined);
+
+        if (!lastFrameWithBoneBeforeCurrentTime) {
+          return;
         }
-      }
+
+        const nextFrameWithBoneAfterCurrentTime = boneKeyframes.find(
+          (keyframe) => keyframe.time > currentTime
+        );
+
+        if (!nextFrameWithBoneAfterCurrentTime) {
+          // @ts-ignore
+          newPose[boneName] = lastFrameWithBoneBeforeCurrentTime.pose[boneName];
+          return;
+        }
+
+        const timeDiff =
+          nextFrameWithBoneAfterCurrentTime.time -
+          lastFrameWithBoneBeforeCurrentTime.time;
+        const timeDiffFromLastFrame =
+          currentTime - lastFrameWithBoneBeforeCurrentTime.time;
+
+        const lerp = timeDiffFromLastFrame / timeDiff;
+
+        // @ts-ignore
+        const lastFrameValue =
+          lastFrameWithBoneBeforeCurrentTime.pose[boneName];
+        // @ts-ignore
+        const nextFrameValue = nextFrameWithBoneAfterCurrentTime.pose[boneName];
+
+        if (typeof lastFrameValue === "number") {
+          const nextValue = nextFrameValue as number;
+          // @ts-ignore
+          newPose[boneName] =
+            lastFrameValue + (nextValue - lastFrameValue) * lerp;
+          return;
+        }
+
+        if (typeof lastFrameValue === "object") {
+          const nextVector = nextFrameValue as SimpleEuler;
+          // @ts-ignore
+          newPose[boneName] = {
+            x: lastFrameValue.x + (nextVector.x - lastFrameValue.x) * lerp,
+            y: lastFrameValue.y + (nextVector.y - lastFrameValue.y) * lerp,
+            z: lastFrameValue.z + (nextVector.z - lastFrameValue.z) * lerp,
+          };
+          return;
+        }
+
+        throw new Error("Unknown type");
+      });
 
       setCurrentPose(newPose);
     }
