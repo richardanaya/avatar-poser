@@ -79,7 +79,7 @@ export const bonesByCategory = {
     "Right Hand": ["RightHand", "RightHandThumb1", "RightHandThumb2", "RightHandThumb3", "RightHandThumb4", "RightHandIndex1", "RightHandIndex2", "RightHandIndex3", "RightHandIndex4", "RightHandMiddle1", "RightHandMiddle2", "RightHandMiddle3", "RightHandMiddle4", "RightHandRing1", "RightHandRing2", "RightHandRing3", "RightHandRing4", "RightHandPinky1", "RightHandPinky2", "RightHandPinky3", "RightHandPinky4"],
     "Left Leg": ["LeftUpLeg", "LeftLeg", "LeftFoot", "LeftToeBase", "LeftToe_End"],
     "Right Leg": ["RightUpLeg", "RightLeg", "RightFoot", "RightToeBase", "RightToe_End"],
-    "Spine & Neck": ["Spine", "Spine1", "Spine2"],
+    "Spine": ["Spine", "Spine1", "Spine2"],
     "Root": ["Hips", "Center"],
     "Mouth": ["MouthOpen", "MouthSmile"],
 }

@@ -7,6 +7,7 @@
   "types": "dist/lib.d.ts",
   "scripts": {
     "dev": "vite",
+    "dev-vr": "vite --config vite.config.vr.ts --host --logLevel info",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "types": "tsc  --declaration --emitDeclarationOnly --p tsconfig.types.json --outDir dist"
@@ -16,8 +17,9 @@
     "@react-three/drei": "^9.57.0",
     "@react-three/fiber": "^8.11.9",
     "@react-three/postprocessing": "^2.7.0",
-    "@react-three/xr": "^5.2.0",
+    "@react-three/xr": "5.4.0",
     "@types/three": "^0.149.0",
+    "@vitejs/plugin-basic-ssl": "^1.0.1",
     "leva": "^0.9.34",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

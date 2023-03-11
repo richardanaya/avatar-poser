@@ -722,10 +722,10 @@
     screen-space-reflections "2.5.0"
     three-stdlib "^2.8.11"
 
-"@react-three/xr@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@react-three/xr/-/xr-5.2.0.tgz#0b5e7b46b15f83065b84cedaff98767cfcbb6d80"
-  integrity sha512-I8ho/yQKkIQX71owM0fGKRTwzeccU4QjnRRnZEIjdI9d7PVnVdq4NAWfct2NJOnC21T5PgvOSjarKtRF9NQp9w==
+"@react-three/xr@5.4.0":
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/@react-three/xr/-/xr-5.4.0.tgz#5a809fc5d333d16ed05f46a30d721d974a17bc83"
+  integrity sha512-R7Y4kK7nN/vL0jwSMhawNnq3ucEHbuG0II1veWIwRiCrG1iYTHyrA1KUsvafwjFlCJvXPKA9LbtldWCi8MjgHQ==
   dependencies:
     three-stdlib "^2.21.1"
     zustand "^3.7.1"
@@ -803,6 +803,11 @@
   integrity sha512-rAZ8Nnpu1g4eFzqCPlaq+TppJpMy0dTpYOQx5KpfoBF4P3aWnCqwj7eKxcmdIb1NJKpIJj50DPugUH4mq5cpBg==
   dependencies:
     "@use-gesture/core" "10.2.24"
+
+"@vitejs/plugin-basic-ssl@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@vitejs/plugin-basic-ssl/-/plugin-basic-ssl-1.0.1.tgz#48c46eab21e0730921986ce742563ae83fe7fe34"
+  integrity sha512-pcub+YbFtFhaGRTo1832FQHQSHvMrlb43974e2eS8EKleR3p1cDdkJFPci1UhwkEf1J9Bz+wKBSzqpKp7nNj2A==
 
 "@vitejs/plugin-react@^3.1.0":
   version "3.1.0"

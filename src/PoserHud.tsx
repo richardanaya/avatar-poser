@@ -87,61 +87,21 @@ const NumericSliderInput = ({
   const handleMouseUp = (e: ThreeEvent<PointerEvent>) => {
     setIsDragging(false);
   };
-  let sliderRef = useRef<Mesh>(null);
 
-  const onSelectStart: XRInteractionHandler = useCallback(
-    (e) => {
-      if (sliderRef.current) {
-        const intersection = e.intersections[0];
-        const localVector = intersection.point;
-        const worldVector = e.target.localToWorld(localVector);
-        const sliderVector = sliderRef.current.worldToLocal(worldVector);
-        setIsDragging(true);
-        setDragStartX(sliderVector.x);
-        setDragStartValue(value);
-      }
-    },
-    [sliderRef]
-  );
-
-  const onSelectMove: XRInteractionHandler = useCallback(
-    (e) => {
-      if (!sliderRef.current) return;
-      const intersection = e.intersections[0];
-      const localVector = intersection.point;
-      const worldVector = e.target.localToWorld(localVector);
-      const sliderVector = sliderRef.current.worldToLocal(worldVector);
-      if (isDragging) {
-        const delta = sliderVector.x - dragStartX;
-        const newValue = dragStartValue + (delta / width) * (max - min);
-        onChange(Math.min(Math.max(min, newValue), max));
-      }
-    },
-    [sliderRef, dragStartX, isDragging]
-  );
-
-  const onSelectEnd: XRInteractionHandler = (e) => {
-    setIsDragging(false);
-  };
+  const [hovered, setHovered] = useState(false);
 
   return (
     <group {...groupProps}>
-      <Interactive
-        onMove={isDragging ? onSelectMove : undefined}
-        onSelectEnd={isDragging ? onSelectEnd : undefined}
+      <mesh
+        position={[0, 0, -0.01]}
+        onPointerMove={isDragging ? handleMouseMove : undefined}
+        onPointerUp={isDragging ? handleMouseUp : undefined}
       >
-        <mesh
-          position={[0, 0, -0.01]}
-          onPointerMove={isDragging ? handleMouseMove : undefined}
-          onPointerUp={isDragging ? handleMouseUp : undefined}
-          ref={sliderRef}
-        >
-          <planeGeometry
-            args={[isDragging ? 10000 : 0, isDragging ? 10000 : 0]}
-          />
-          <meshBasicMaterial transparent opacity={0} />
-        </mesh>
-      </Interactive>
+        <planeGeometry
+          args={[isDragging ? 10000 : 0, isDragging ? 10000 : 0]}
+        />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
       <mesh position={[0, 0, -0.01]}>
         <planeGeometry args={[width, 4]} />
         <meshBasicMaterial color={eigenmid} />
@@ -153,7 +113,14 @@ const NumericSliderInput = ({
       >
         {name}
       </Typography>
-      <Interactive onSelectStart={isDragging ? undefined : onSelectStart}>
+      <Interactive
+        onHover={() => {
+          setHovered(true);
+        }}
+        onBlur={() => {
+          setHovered(false);
+        }}
+      >
         <mesh
           position={[(value / (max - min)) * width, 0, 0]}
           onPointerDown={isDragging ? undefined : handleMouseDown}
@@ -173,7 +140,7 @@ const NumericSliderInput = ({
           }
         >
           <circleGeometry args={large ? [15, 15] : [7, 7]} />
-          <meshBasicMaterial color={eigenlumin} />
+          <meshBasicMaterial color={hovered ? "red" : eigenlumin} />
         </mesh>
       </Interactive>
     </group>
@@ -447,6 +414,7 @@ const Timeline = ({
   currentSelectedKeyFrame,
   onSelectKeyFrame,
   onInteractingChanged,
+  setMessage,
   ...groupProps
 }: {
   width: number;
@@ -454,6 +422,7 @@ const Timeline = ({
   animation: PoseAnimation;
   currentSelectedKeyFrame: number | undefined;
   onSelectKeyFrame: (index: number) => void;
+  setMessage: (message: string) => void;
   onTimeChange: (time: number) => void;
   onInteractingChanged?: (interacting: boolean) => void;
 } & GroupProps) => {
@@ -483,79 +452,62 @@ const Timeline = ({
 
   let sliderRef = useRef<Mesh>(null);
 
-  const onSelectStart: XRInteractionHandler = useCallback(
-    (e) => {
-      if (sliderRef.current) {
-        const intersection = e.intersections[0];
-        const localVector = intersection.point;
-        const worldVector = e.target.localToWorld(localVector);
-        const sliderVector = sliderRef.current.worldToLocal(worldVector);
-        setIsDragging(true);
-        setDragStartX(sliderVector.x);
-        setDragStartCurrentTime(currentTime);
-        onInteractingChanged?.(true);
-      }
-    },
-    [sliderRef]
-  );
-
-  const onSelectMove: XRInteractionHandler = useCallback(
-    (e) => {
-      if (!sliderRef.current) return;
-      const intersection = e.intersections[0];
-      const localVector = intersection.point;
-      const worldVector = e.target.localToWorld(localVector);
-      const sliderVector = sliderRef.current.worldToLocal(worldVector);
-      if (isDragging) {
-        const delta = sliderVector.x - dragStartX;
-        const newTime =
-          dragStartCurrentTime + (delta / width) * animation.length;
-        onTimeChange(Math.max(0, Math.min(animation.length, newTime)));
-      }
-    },
-    [sliderRef, dragStartX, isDragging]
-  );
-
-  const onSelectEnd: XRInteractionHandler = (e) => {
-    setIsDragging(false);
-  };
-
   const [hovered, setHovered] = useState(false);
 
   return (
     <group {...groupProps}>
-      <Interactive onMove={onSelectMove} onSelectEnd={onSelectEnd}>
-        <mesh
-          position={[0, 0, 0]}
-          scale={[isDragging ? 10000 : 0, isDragging ? 10000 : 0, 0.0001]}
-          onPointerMove={handleMouseMove}
-          onPointerUp={handleMouseUp}
-        >
-          <planeGeometry />
-          <meshBasicMaterial transparent opacity={0} />
-        </mesh>
-      </Interactive>
-      <mesh position={[0, 0, 0]} scale={[width, 10, 0.0001]} ref={sliderRef}>
-        <planeGeometry />
-        <meshBasicMaterial color={eigenmid} />
-      </mesh>
       <Interactive
-        onSelectStart={onSelectStart}
         onHover={() => {
           setHovered(true);
         }}
         onBlur={() => {
           setHovered(false);
         }}
+        onSelectStart={(e) => {
+          setIsDragging(true);
+          setDragStartX(e.intersection?.point.x || 0);
+          setMessage(JSON.stringify(e.intersection?.point));
+        }}
+        onMove={(e) => {
+          console.log(e.intersection?.object.name);
+          const offsetX =
+            (e.intersection?.point.x || 0 - dragStartX) - (width * 0.001) / 2;
+          onTimeChange(
+            Math.max(
+              0,
+              Math.min(animation.length, (1 - -offsetX) * animation.length)
+            )
+          );
+        }}
+        onSelectEnd={() => {
+          setIsDragging(false);
+        }}
       >
         <mesh
+          name="blah"
+          position={[0, 0, 0]}
+          onPointerMove={handleMouseMove}
+          onPointerUp={handleMouseUp}
+        >
+          <planeGeometry
+            args={[isDragging ? 10000 : width, isDragging ? 10000 : 20]}
+          />
+          <meshBasicMaterial transparent opacity={0} />
+        </mesh>
+      </Interactive>
+      <mesh position={[0, 0, 0]} ref={sliderRef}>
+        <planeGeometry args={[width, 10]} />
+        <meshBasicMaterial color={eigenmid} />
+      </mesh>
+      <Interactive>
+        <mesh
+          name="circle"
           onPointerDown={handleMouseDown}
           position={[
             (currentTime / animation.length) * width - width / 2,
             0,
             0.02,
           ]}
-          scale={[5, 5, 0.001]}
           onPointerOver={() => {
             document.body.style.cursor = "pointer";
           }}
@@ -563,8 +515,8 @@ const Timeline = ({
             document.body.style.cursor = "auto";
           }}
         >
-          <circleGeometry />
-          <meshBasicMaterial color={chartruse} />
+          <circleGeometry args={[5, 5]} />
+          <meshBasicMaterial color={hovered ? "red" : chartruse} />
         </mesh>
       </Interactive>
       {animation.length > 0 &&
@@ -572,9 +524,8 @@ const Timeline = ({
           return (
             <Interactive
               key={i}
-              onSelectEnd={(_) => {
+              onSelectEnd={() => {
                 onSelectKeyFrame(i);
-                <meshBasicMaterial color={eigenmid} />;
               }}
             >
               <mesh
@@ -583,7 +534,6 @@ const Timeline = ({
                   0,
                   0.01,
                 ]}
-                scale={[10, 10, 0.001]}
                 onPointerDown={(_) => {
                   onSelectKeyFrame(i);
                   <meshBasicMaterial color={eigenmid} />;
@@ -595,7 +545,7 @@ const Timeline = ({
                   document.body.style.cursor = "auto";
                 }}
               >
-                <circleGeometry />
+                <circleGeometry args={[10, 10]} />
                 <meshBasicMaterial
                   color={currentSelectedKeyFrame === i ? eigenlumin : eigenmid}
                 />
@@ -984,8 +934,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
               </Typography>
               {!hasAddedBone && (
                 <Typography position={[0, -20, 0]} size={1.5}>
-                  Add a bone using the menu on the right ( "neck" is suggested
-                  to see how this works ).
+                  Add a bone using the menu on the right.
                 </Typography>
               )}
             </>
@@ -1093,6 +1042,7 @@ export function PoserHud({ width, height, url, ...groupProps }: PoserHudProps) {
         onSelectKeyFrame={(_) => {
           setCurrentSelectedKeyFrame(_);
         }}
+        setMessage={setHelperMessage}
         currentTime={currentTime}
         animation={animation}
         onTimeChange={(_) => {
