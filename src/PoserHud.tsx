@@ -72,7 +72,7 @@ const NumericSliderInput = ({
   onChange: (value: number) => void;
 } & GroupProps) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStartX, setDragStartX] = useState(0);
+  const [dragStartX, setDragStartX] = useState<number | undefined>(undefined);
   const [dragStartValue, setDragStartValue] = useState(0);
 
   const handleMouseDown = (e: ThreeEvent<PointerEvent>) => {
@@ -82,7 +82,7 @@ const NumericSliderInput = ({
   };
 
   const handleMouseMove = (e: ThreeEvent<PointerEvent>) => {
-    if (isDragging) {
+    if (isDragging && dragStartX !== undefined) {
       const delta = e.clientX - dragStartX;
       const newValue = dragStartValue + (delta / width) * (max - min);
       onChange(Math.min(Math.max(min, newValue), max));
@@ -94,19 +94,48 @@ const NumericSliderInput = ({
   };
 
   const [hovered, setHovered] = useState(false);
+  const sliderRef = useRef<Mesh>(null!);
 
   return (
     <group {...groupProps}>
-      <mesh
-        position={[0, 0, -0.01]}
-        onPointerMove={isDragging ? handleMouseMove : undefined}
-        onPointerUp={isDragging ? handleMouseUp : undefined}
+      <SemiInteractive
+        interactable={isDragging}
+        onMove={(e) => {
+          if (dragStartX === undefined) {
+            setDragStartX(e.intersections[0].point.x);
+          }
+          if (isDragging && sliderRef.current && dragStartX !== undefined) {
+            // get total applied scale of slider
+            const scale = sliderRef.current.getWorldScale(new Vector3());
+            const realWidth = width * scale.x;
+            const offsetX =
+              e.intersections[0].point.x +
+              realWidth / 2 +
+              // I have no idea why this offset needs to be here ( some math i'm too tired to figure out )
+              (realWidth / 0.886 - realWidth);
+            console.log(`${realWidth}/${realWidth}`);
+            const newValue = min + (offsetX / realWidth) * (max - min);
+            onChange(Math.max(min, Math.min(max, newValue)));
+          }
+        }}
+        onSelectEnd={() => {
+          setIsDragging(false);
+          setDragStartX(undefined);
+          setHovered(false);
+        }}
       >
-        <planeGeometry
-          args={[isDragging ? 10000 : 0, isDragging ? 10000 : 0]}
-        />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
+        <mesh
+          position={[0, 0, -0.01]}
+          onPointerMove={isDragging ? handleMouseMove : undefined}
+          onPointerUp={isDragging ? handleMouseUp : undefined}
+          ref={sliderRef}
+        >
+          <planeGeometry
+            args={[isDragging ? 10000 : 20, isDragging ? 10000 : 20]}
+          />
+          <meshBasicMaterial transparent opacity={0} />
+        </mesh>
+      </SemiInteractive>
       <mesh position={[0, 0, -0.01]}>
         <planeGeometry args={[width, 4]} />
         <meshBasicMaterial color={eigenmid} />
@@ -118,7 +147,12 @@ const NumericSliderInput = ({
       >
         {name}
       </Typography>
-      <Interactive
+      <SemiInteractive
+        interactable={!isDragging}
+        onSelectStart={(e) => {
+          setIsDragging(true);
+          setDragStartValue(value);
+        }}
         onHover={() => {
           setHovered(true);
         }}
@@ -145,9 +179,9 @@ const NumericSliderInput = ({
           }
         >
           <circleGeometry args={large ? [15, 15] : [7, 7]} />
-          <meshBasicMaterial color={hovered ? "red" : eigenlumin} />
+          <meshBasicMaterial color={hovered ? "white" : eigenlumin} />
         </mesh>
-      </Interactive>
+      </SemiInteractive>
     </group>
   );
 };
@@ -464,6 +498,8 @@ const Timeline = ({
 
   let sliderRef = useRef<Mesh>(null);
 
+  let { isPresenting } = useXR();
+
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -535,8 +571,9 @@ const Timeline = ({
             document.body.style.cursor = "auto";
           }}
         >
-          <circleGeometry args={[5, 5]} />
-          <meshBasicMaterial color={hovered ? "red" : chartruse} />
+          <circleGeometry args={isPresenting ? [8, 8] : [5, 5]} />
+          <meshBasicMaterial color={hovered ? "#adff2f" : chartruse} /> //
+          brighterChartreuse rgb #
         </mesh>
       </SemiInteractive>
       {animation.length > 0 &&
@@ -566,7 +603,7 @@ const Timeline = ({
                   document.body.style.cursor = "auto";
                 }}
               >
-                <circleGeometry args={[10, 10]} />
+                <circleGeometry args={isPresenting ? [15, 15] : [10, 10]} />
                 <meshBasicMaterial
                   color={currentSelectedKeyFrame === i ? eigenlumin : eigenmid}
                 />
