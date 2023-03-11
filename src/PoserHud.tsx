@@ -6,7 +6,12 @@ import { allBones, bonesByCategory } from "./allBones";
 import { Mesh, Shape, Vector3 } from "three";
 import { chartruse, eigenlumin, eigenmid } from "./colors";
 import { EventHandlers } from "@react-three/fiber/dist/declarations/src/core/events";
-import { Interactive, useXR, XRInteractionHandler } from "@react-three/xr";
+import {
+  Interactive,
+  InteractiveProps,
+  useXR,
+  XRInteractionHandler,
+} from "@react-three/xr";
 
 const hasAddedBone = localStorage.getItem("hasAddedBone") === "true";
 
@@ -340,6 +345,13 @@ function RoundedRectOutline({
   );
 }
 
+function SemiInteractive(props: { interactable: boolean } & InteractiveProps) {
+  if (props.interactable) {
+    return <Interactive {...props}>{props.children}</Interactive>;
+  }
+  return <>{props.children}</>;
+}
+
 const Button = ({
   text,
   width,
@@ -427,7 +439,7 @@ const Timeline = ({
   onInteractingChanged?: (interacting: boolean) => void;
 } & GroupProps) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStartX, setDragStartX] = useState(0);
+  const [dragStartX, setDragStartX] = useState<number | undefined>(undefined);
   const [dragStartCurrentTime, setDragStartCurrentTime] = useState(0);
 
   const handleMouseDown = (e: ThreeEvent<PointerEvent>) => {
@@ -439,7 +451,7 @@ const Timeline = ({
   };
 
   const handleMouseMove = (e: ThreeEvent<PointerEvent>) => {
-    if (isDragging) {
+    if (isDragging && dragStartX !== undefined) {
       const delta = e.clientX - dragStartX;
       const newTime = dragStartCurrentTime + (delta / width) * animation.length;
       onTimeChange(Math.max(0, Math.min(animation.length, newTime)));
@@ -456,31 +468,26 @@ const Timeline = ({
 
   return (
     <group {...groupProps}>
-      <Interactive
-        onHover={() => {
-          setHovered(true);
-        }}
-        onBlur={() => {
-          setHovered(false);
-        }}
-        onSelectStart={(e) => {
-          setIsDragging(true);
-          setDragStartX(e.intersection?.point.x || 0);
-          setMessage(JSON.stringify(e.intersection?.point));
-        }}
+      <SemiInteractive
+        interactable={isDragging}
         onMove={(e) => {
-          console.log(e.intersection?.object.name);
-          const offsetX =
-            (e.intersection?.point.x || 0 - dragStartX) - (width * 0.001) / 2;
-          onTimeChange(
-            Math.max(
-              0,
-              Math.min(animation.length, (1 - -offsetX) * animation.length)
-            )
-          );
+          if (dragStartX === undefined) {
+            setDragStartX(e.intersections[0].point.x);
+          }
+          if (isDragging && sliderRef.current && dragStartX !== undefined) {
+            // get total applied scale of slider
+            const scale = sliderRef.current.getWorldScale(new Vector3());
+            const realWidth = width * scale.x;
+            console.log(realWidth);
+            const offsetX = e.intersections[0].point.x + realWidth / 2;
+            const newTime = (offsetX / realWidth) * animation.length;
+            onTimeChange(Math.max(0, Math.min(animation.length, newTime)));
+          }
         }}
         onSelectEnd={() => {
           setIsDragging(false);
+          setDragStartX(undefined);
+          setHovered(false);
         }}
       >
         <mesh
@@ -488,18 +495,31 @@ const Timeline = ({
           position={[0, 0, 0]}
           onPointerMove={handleMouseMove}
           onPointerUp={handleMouseUp}
+          ref={sliderRef}
         >
           <planeGeometry
             args={[isDragging ? 10000 : width, isDragging ? 10000 : 20]}
           />
           <meshBasicMaterial transparent opacity={0} />
         </mesh>
-      </Interactive>
+      </SemiInteractive>
       <mesh position={[0, 0, 0]} ref={sliderRef}>
         <planeGeometry args={[width, 10]} />
         <meshBasicMaterial color={eigenmid} />
       </mesh>
-      <Interactive>
+      <SemiInteractive
+        interactable={!isDragging}
+        onSelectStart={(e) => {
+          setIsDragging(true);
+          setDragStartCurrentTime(currentTime);
+        }}
+        onHover={() => {
+          setHovered(true);
+        }}
+        onBlur={() => {
+          setHovered(false);
+        }}
+      >
         <mesh
           name="circle"
           onPointerDown={handleMouseDown}
@@ -518,11 +538,12 @@ const Timeline = ({
           <circleGeometry args={[5, 5]} />
           <meshBasicMaterial color={hovered ? "red" : chartruse} />
         </mesh>
-      </Interactive>
+      </SemiInteractive>
       {animation.length > 0 &&
         animation.keyframes.map(({ time }, i) => {
           return (
-            <Interactive
+            <SemiInteractive
+              interactable={!isDragging}
               key={i}
               onSelectEnd={() => {
                 onSelectKeyFrame(i);
@@ -550,7 +571,7 @@ const Timeline = ({
                   color={currentSelectedKeyFrame === i ? eigenlumin : eigenmid}
                 />
               </mesh>
-            </Interactive>
+            </SemiInteractive>
           );
         })}
     </group>
