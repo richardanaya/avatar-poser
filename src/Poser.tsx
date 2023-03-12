@@ -234,7 +234,11 @@ export const Poser = ({ url }: PoserProps) => {
             />
             <Interactive
               onSelectEnd={(e) => {
-                const worldPosition = new Vector3();
+                const worldPosition = new Vector3(
+                  e.intersections[0].point.x,
+                  e.intersections[0].point.y,
+                  e.intersections[0].point.z
+                );
                 e.intersections[0].object.getWorldPosition(worldPosition);
                 teleportTo(worldPosition);
               }}
