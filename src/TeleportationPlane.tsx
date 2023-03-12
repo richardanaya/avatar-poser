@@ -1,3 +1,4 @@
+import { useThree } from "@react-three/fiber";
 import { Interactive, useXR } from "@react-three/xr";
 import { useState } from "react";
 import { Vector3 } from "three";
@@ -6,6 +7,7 @@ import { useTeleportation } from "./useTeleportation";
 export type TeleportationPlaneProps = {
   leftHand?: boolean;
   rightHand?: boolean;
+  maxDistance?: number;
 };
 
 const MARKER_SIZE = 0.25;
@@ -15,6 +17,8 @@ export function TeleportationPlane(props: TeleportationPlaneProps) {
   const [intersection, setIntersection] = useState<Vector3 | null>(null);
   const { controllers } = useXR();
   const [size, setSize] = useState(MARKER_SIZE);
+  const maxDistanceTeleport = props.maxDistance || 10;
+  const { camera } = useThree();
 
   return (
     <>
@@ -32,7 +36,16 @@ export function TeleportationPlane(props: TeleportationPlaneProps) {
           ) {
             return;
           }
+
           if (e.intersection) {
+            const distanceFromCamera = e.intersection.point.distanceTo(
+              camera.position
+            );
+            if (distanceFromCamera > maxDistanceTeleport) {
+              setSize(0);
+            } else {
+              setSize(MARKER_SIZE);
+            }
             setIntersection(
               new Vector3(
                 e.intersection.point.x,
@@ -50,6 +63,14 @@ export function TeleportationPlane(props: TeleportationPlaneProps) {
             return;
           }
           if (e.intersection) {
+            const distanceFromCamera = e.intersection.point.distanceTo(
+              camera.position
+            );
+            if (distanceFromCamera > maxDistanceTeleport) {
+              setSize(0);
+            } else {
+              setSize(MARKER_SIZE);
+            }
             setSize(MARKER_SIZE);
           }
         }}
@@ -69,10 +90,18 @@ export function TeleportationPlane(props: TeleportationPlaneProps) {
           ) {
             return;
           }
-          setSize(MARKER_SIZE * 1.1);
+          if (e.intersection) {
+            const distanceFromCamera = e.intersection.point.distanceTo(
+              camera.position
+            );
+            if (distanceFromCamera > maxDistanceTeleport) {
+              setSize(0);
+            } else {
+              setSize(MARKER_SIZE * 1.1);
+            }
+          }
         }}
         onSelectEnd={(e) => {
-          debugger;
           setSize(MARKER_SIZE);
           if (
             (e.target.inputSource.handedness === "left" && !props.leftHand) ||
@@ -81,7 +110,10 @@ export function TeleportationPlane(props: TeleportationPlaneProps) {
             return;
           }
           if (intersection) {
-            teleportTo(intersection);
+            const distanceFromCamera = intersection.distanceTo(camera.position);
+            if (distanceFromCamera <= maxDistanceTeleport) {
+              teleportTo(intersection);
+            }
           }
         }}
       >
