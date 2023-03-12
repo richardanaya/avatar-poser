@@ -1,9 +1,14 @@
 import { Avatar, AvatarPose, SimpleEuler } from "react-three-avatar";
-import { Hud, OrbitControls, OrthographicCamera } from "@react-three/drei";
+import {
+  Hud,
+  OrbitControls,
+  OrthographicCamera,
+  Plane,
+} from "@react-three/drei";
 import { useEffect, useState } from "react";
 import { useWindowSize } from "@react-hook/window-size";
 import { PoserHud } from "./PoserHud";
-import { useXR } from "@react-three/xr";
+import { Interactive, useXR } from "@react-three/xr";
 import {
   Bloom,
   DepthOfField,
@@ -12,6 +17,8 @@ import {
   Vignette,
 } from "@react-three/postprocessing";
 import create from "zustand";
+import { useTeleportation } from "./useTeleportation";
+import { Vector3 } from "three";
 
 export type PoseKeyframe = {
   time: number;
@@ -170,6 +177,7 @@ export const Poser = ({ url }: PoserProps) => {
   const editorWidth = width * 0.9;
 
   const { isPresenting } = useXR();
+  const { teleportTo } = useTeleportation();
 
   return (
     <>
@@ -224,6 +232,23 @@ export const Poser = ({ url }: PoserProps) => {
               rotation={[-Math.PI / 4, 0, 0]}
               scale={0.001}
             />
+            <Interactive
+              onSelectEnd={(e) => {
+                const worldPosition = new Vector3();
+                e.intersections[0].object.getWorldPosition(worldPosition);
+                teleportTo(worldPosition);
+              }}
+            >
+              <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[100, 100, 100]}>
+                <planeBufferGeometry attach="geometry" args={[1, 1]} />
+                <meshBasicMaterial
+                  attach="material"
+                  color="white"
+                  transparent
+                  opacity={0.5}
+                />
+              </mesh>
+            </Interactive>
           </>
         )}
       </group>
