@@ -1,11 +1,17 @@
-import { Interactive } from "@react-three/xr";
+import { Interactive, useXR } from "@react-three/xr";
 import { useState } from "react";
 import { Vector3 } from "three";
 import { useTeleportation } from "./useTeleportation";
 
-export function TeleportationPlane() {
+export type TeleportationPlaneProps = {
+  leftHand?: boolean;
+  rightHand?: boolean;
+};
+
+export function TeleportationPlane(props: TeleportationPlaneProps) {
   const { teleportTo } = useTeleportation();
   const [intersection, setIntersection] = useState<Vector3 | null>(null);
+  const { controllers } = useXR();
 
   return (
     <>
@@ -17,6 +23,12 @@ export function TeleportationPlane() {
       )}
       <Interactive
         onMove={(e) => {
+          if (
+            (e.target.inputSource.handedness === "left" && !props.leftHand) ||
+            (e.target.inputSource.handedness === "right" && !props.rightHand)
+          ) {
+            return;
+          }
           if (e.intersection) {
             setIntersection(
               new Vector3(
@@ -28,6 +40,12 @@ export function TeleportationPlane() {
           }
         }}
         onSelectEnd={(e) => {
+          if (
+            (e.target.inputSource.handedness === "left" && !props.leftHand) ||
+            (e.target.inputSource.handedness === "right" && !props.rightHand)
+          ) {
+            return;
+          }
           if (e.intersection) {
             teleportTo(
               new Vector3(

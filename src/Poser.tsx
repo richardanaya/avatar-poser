@@ -231,7 +231,7 @@ export const Poser = ({ url }: PoserProps) => {
             rotation={[-Math.PI / 4, 0, 0]}
             scale={0.001}
           />
-          <TeleportationPlane />
+          <TeleportationPlane leftHand />
         </>
       )}
     </>
