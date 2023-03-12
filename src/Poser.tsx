@@ -19,6 +19,7 @@ import {
 import create from "zustand";
 import { useTeleportation } from "./useTeleportation";
 import { Vector3 } from "three";
+import { TeleportationPlane } from "./TeleportationPlane";
 
 export type PoseKeyframe = {
   time: number;
@@ -177,101 +178,62 @@ export const Poser = ({ url }: PoserProps) => {
   const editorWidth = width * 0.9;
 
   const { isPresenting } = useXR();
-  const { teleportTo } = useTeleportation();
-
-  const [intersection, setIntersection] = useState<Vector3 | null>(null);
 
   return (
     <>
-      <group position={isPresenting ? [0, 0, -1] : [0, 0, 0]}>
-        <Avatar
-          url={url}
-          pose={currentPose}
-          position={!isPresenting ? [0, -5, 0] : [0, 0, 0]}
-          scale={!isPresenting ? [4, 4, 4] : [1, 1, 1]}
-        />
-        {!isPresenting && (
-          <>
-            <OrbitControls enableDamping={false} enabled={!interacting} />
+      <Avatar
+        url={url}
+        pose={currentPose}
+        position={!isPresenting ? [0, -5, 0] : [0, 0, -1]}
+        scale={!isPresenting ? [4, 4, 4] : [1, 1, 1]}
+      />
+      {!isPresenting && (
+        <>
+          <OrbitControls enableDamping={false} enabled={!interacting} />
 
-            <Hud renderPriority={fancy ? 4 : 1}>
-              <OrthographicCamera makeDefault position={[0, 0, 100]} />
-              <PoserHud
-                url={url}
-                width={editorWidth}
-                height={Math.max(editorHeight, 200)}
-                position={[0, offsetY, 0]}
-              />
-              <ambientLight intensity={1} />
-              <pointLight position={[200, 200, 100]} intensity={0.5} />
-            </Hud>
-            {fancy && (
-              <EffectComposer>
-                <DepthOfField
-                  focusDistance={0}
-                  focalLength={0.02}
-                  bokehScale={2}
-                  height={480}
-                />
-                <Bloom
-                  luminanceThreshold={0}
-                  luminanceSmoothing={2}
-                  height={300}
-                />
-                <Noise opacity={0.02} />
-                <Vignette eskil={false} offset={0.1} darkness={1.1} />
-              </EffectComposer>
-            )}
-          </>
-        )}
-        {isPresenting && (
-          <>
+          <Hud renderPriority={fancy ? 4 : 1}>
+            <OrthographicCamera makeDefault position={[0, 0, 100]} />
             <PoserHud
               url={url}
-              width={1200}
-              height={250}
-              position={[0, 1.2, 0.5]}
-              rotation={[-Math.PI / 4, 0, 0]}
-              scale={0.001}
+              width={editorWidth}
+              height={Math.max(editorHeight, 200)}
+              position={[0, offsetY, 0]}
             />
-            {intersection && (
-              <mesh position={intersection} rotation={[-Math.PI / 2, 0, 0]}>
-                <circleGeometry attach="geometry" args={[0.5, 32]} />
-                <meshBasicMaterial attach="material" color="white" />
-              </mesh>
-            )}
-            <Interactive
-              onMove={(e) => {
-                if (e.intersection) {
-                  setIntersection(
-                    new Vector3(
-                      e.intersection.point.x,
-                      e.intersection.point.y,
-                      e.intersection.point.z
-                    )
-                  );
-                }
-              }}
-              onSelectEnd={(e) => {
-                if (e.intersection) {
-                  teleportTo(
-                    new Vector3(
-                      e.intersection?.point.x,
-                      e.intersection?.point.y,
-                      e.intersection?.point.z
-                    )
-                  );
-                }
-              }}
-            >
-              <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[100, 100, 100]}>
-                <planeBufferGeometry attach="geometry" args={[1, 1]} />
-                <meshBasicMaterial attach="material" transparent opacity={0} />
-              </mesh>
-            </Interactive>
-          </>
-        )}
-      </group>
+            <ambientLight intensity={1} />
+            <pointLight position={[200, 200, 100]} intensity={0.5} />
+          </Hud>
+          {fancy && (
+            <EffectComposer>
+              <DepthOfField
+                focusDistance={0}
+                focalLength={0.02}
+                bokehScale={2}
+                height={480}
+              />
+              <Bloom
+                luminanceThreshold={0}
+                luminanceSmoothing={2}
+                height={300}
+              />
+              <Noise opacity={0.02} />
+              <Vignette eskil={false} offset={0.1} darkness={1.1} />
+            </EffectComposer>
+          )}
+        </>
+      )}
+      {isPresenting && (
+        <>
+          <PoserHud
+            url={url}
+            width={1200}
+            height={250}
+            position={[0, 1.2, -0.5]}
+            rotation={[-Math.PI / 4, 0, 0]}
+            scale={0.001}
+          />
+          <TeleportationPlane />
+        </>
+      )}
     </>
   );
 };
