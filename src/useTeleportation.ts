@@ -8,6 +8,10 @@ export function useTeleportation() {
   const gl = useThree((state) => state.gl);
 
   useEffect(() => {
+    const b = gl.xr.getReferenceSpace();
+    if (b) {
+      setBaseReferenceSpace(b);
+    }
     const onSessionStart = () => {
       if (gl.xr) {
         setBaseReferenceSpace(gl.xr.getReferenceSpace());

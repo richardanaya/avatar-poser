@@ -70,6 +70,7 @@ export function TeleportationPlane(props: TeleportationPlaneProps) {
           setSize(0.35);
         }}
         onSelectEnd={(e) => {
+          debugger;
           setSize(0.3);
           if (
             (e.target.inputSource.handedness === "left" && !props.leftHand) ||
