@@ -234,13 +234,15 @@ export const Poser = ({ url }: PoserProps) => {
             />
             <Interactive
               onSelectEnd={(e) => {
-                const worldPosition = new Vector3(
-                  e.intersections[0].point.x,
-                  e.intersections[0].point.y,
-                  e.intersections[0].point.z
-                );
-                e.intersections[0].object.getWorldPosition(worldPosition);
-                teleportTo(worldPosition);
+                if (e.intersection) {
+                  teleportTo(
+                    new Vector3(
+                      e.intersection?.point.x,
+                      e.intersection?.point.y,
+                      e.intersection?.point.z
+                    )
+                  );
+                }
               }}
             >
               <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[100, 100, 100]}>

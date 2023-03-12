@@ -19,11 +19,10 @@ export function useTeleportation() {
         }
     }, [gl]);
 
-    const teleportTo = useCallback((worldPosition: Vector3, worldRotation?: Quaternion) => {
+    const teleportTo = useCallback((worldPosition: Vector3, offsetRotation?: Quaternion) => {
         if (baseReferenceSpace) {
-            const offsetPosition = { x: worldPosition.x, y: - worldPosition.y, z: - worldPosition.z};
-            const offsetRotation = worldRotation || new Quaternion();
-            const transform = new XRRigidTransform( offsetPosition, offsetRotation );
+            const offsetFromBase = {x:-worldPosition.x, y:-worldPosition.y, z:-worldPosition.z};
+            const transform = new XRRigidTransform( offsetFromBase, offsetRotation || new Quaternion() );
             const teleportSpaceOffset = baseReferenceSpace.getOffsetReferenceSpace( transform );
             gl.xr.setReferenceSpace( teleportSpaceOffset );
         }
