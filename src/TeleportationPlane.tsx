@@ -8,11 +8,13 @@ export type TeleportationPlaneProps = {
   rightHand?: boolean;
 };
 
+const MARKER_SIZE = 0.25;
+
 export function TeleportationPlane(props: TeleportationPlaneProps) {
   const { teleportTo } = useTeleportation();
   const [intersection, setIntersection] = useState<Vector3 | null>(null);
   const { controllers } = useXR();
-  const [size, setSize] = useState(0.3);
+  const [size, setSize] = useState(MARKER_SIZE);
 
   return (
     <>
@@ -48,7 +50,7 @@ export function TeleportationPlane(props: TeleportationPlaneProps) {
             return;
           }
           if (e.intersection) {
-            setSize(0.3);
+            setSize(MARKER_SIZE);
           }
         }}
         onBlur={(e) => {
@@ -67,11 +69,11 @@ export function TeleportationPlane(props: TeleportationPlaneProps) {
           ) {
             return;
           }
-          setSize(0.35);
+          setSize(MARKER_SIZE * 1.1);
         }}
         onSelectEnd={(e) => {
           debugger;
-          setSize(0.3);
+          setSize(MARKER_SIZE);
           if (
             (e.target.inputSource.handedness === "left" && !props.leftHand) ||
             (e.target.inputSource.handedness === "right" && !props.rightHand)
