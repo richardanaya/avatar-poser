@@ -26,33 +26,26 @@ export function useTeleportation() {
   }, [gl]);
 
   const teleportTo = useCallback(
-    async (worldPosition: Vector3, offsetRotation?: Quaternion) => {
+    async (worldPosition: Vector3) => {
       if (baseReferenceSpace && session) {
-        debugger;
         const pose = await new Promise<XRViewerPose | undefined>((resolve) => {
-          // @ts-ignore
           session.requestAnimationFrame((_, xrFrame) => {
             const pose = xrFrame.getViewerPose(baseReferenceSpace);
             resolve(pose);
           });
         });
-        debugger;
-        if (!pose) return;
 
         const offsetX = pose?.transform.position.x || 0;
-        const offsetY = pose?.transform.position.y || 0;
         const offsetZ = pose?.transform.position.z || 0;
-
-        console.log(offsetX, offsetY, offsetZ);
 
         const offsetFromBase = {
           x: -worldPosition.x + offsetX,
-          y: -worldPosition.y + 0,
+          y: -worldPosition.y,
           z: -worldPosition.z + offsetZ,
         };
         const transform = new XRRigidTransform(
           offsetFromBase,
-          offsetRotation || new Quaternion()
+          new Quaternion()
         );
         const teleportSpaceOffset =
           baseReferenceSpace.getOffsetReferenceSpace(transform);
