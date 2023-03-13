@@ -46,9 +46,9 @@ export function useTeleportation() {
         console.log(offsetX, offsetY, offsetZ);
 
         const offsetFromBase = {
-          x: -(worldPosition.x + offsetX),
-          y: -worldPosition.y,
-          z: -(worldPosition.z + offsetZ),
+          x: -worldPosition.x + offsetX,
+          y: -worldPosition.y + 0,
+          z: -worldPosition.z + offsetZ,
         };
         const transform = new XRRigidTransform(
           offsetFromBase,
